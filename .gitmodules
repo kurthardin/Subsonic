@@ -1,0 +1,3 @@
+[submodule "eddieringle/android-undergarment"]
+	path = eddieringle/android-undergarment
+	url = git://github.com/eddieringle/android-undergarment
