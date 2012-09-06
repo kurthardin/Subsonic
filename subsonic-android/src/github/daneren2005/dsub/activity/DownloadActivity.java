@@ -84,7 +84,6 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
     private static final int COLOR_BUTTON_DISABLED = Color.rgb(164, 166, 158);
 
     private ViewFlipper playlistFlipper;
-    private ViewFlipper buttonBarFlipper;
     private TextView emptyTextView;
     private TextView songTitleTextView;
     private TextView albumTextView;
@@ -128,9 +127,16 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
         swipeDistance = (d.getWidth() + d.getHeight()) * PERCENTAGE_OF_SCREEN_FOR_SWIPE / 100;
         swipeVelocity = (d.getWidth() + d.getHeight()) * PERCENTAGE_OF_SCREEN_FOR_SWIPE / 100;
         gestureScanner = new GestureDetector(this);
+        
+        // Button 1: play all
+        ImageButton actionButton1 = (ImageButton) findViewById(R.id.action_button_1);
+        actionButton1.setVisibility(View.GONE);
+
+        // Button 2: refresh
+        ImageButton actionButton2 = (ImageButton) findViewById(R.id.action_button_2);
+        actionButton2.setVisibility(View.GONE);
 
         playlistFlipper = (ViewFlipper) findViewById(R.id.download_playlist_flipper);
-        buttonBarFlipper = (ViewFlipper) findViewById(R.id.download_button_bar_flipper);
         emptyTextView = (TextView) findViewById(R.id.download_empty);
         songTitleTextView = (TextView) findViewById(R.id.download_song_title);
         albumTextView = (TextView) findViewById(R.id.download_album);
@@ -169,7 +175,6 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
         equalizerButton.setOnTouchListener(touchListener);
         visualizerButton.setOnTouchListener(touchListener);
         jukeboxButton.setOnTouchListener(touchListener);
-        buttonBarFlipper.setOnTouchListener(touchListener);
         emptyTextView.setOnTouchListener(touchListener);
         albumArtImageView.setOnTouchListener(touchListener);
 
@@ -352,6 +357,10 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
         visualizerButton.setTypeface(typeface);
         jukeboxButton.setTypeface(typeface);
     }
+    
+    protected void refresh() {
+    	onResume();
+    }
 
     @Override
     protected void onResume() {
@@ -376,7 +385,6 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
         DownloadService downloadService = getDownloadService();
         if (downloadService == null || downloadService.getCurrentPlaying() == null) {
             playlistFlipper.setDisplayedChild(1);
-            buttonBarFlipper.setDisplayedChild(1);
         }
 
         onDownloadListChanged();
@@ -545,13 +553,13 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
                 Intent intent = new Intent(this, SelectAlbumActivity.class);
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_ID, song.getSong().getParent());
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_NAME, song.getSong().getAlbum());
-                Util.startActivityWithoutTransition(this, intent);
+                startActivity(intent);
                 return true;
             case R.id.menu_lyrics:
                 intent = new Intent(this, LyricsActivity.class);
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_ARTIST, song.getSong().getArtist());
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_TITLE, song.getSong().getTitle());
-                Util.startActivityWithoutTransition(this, intent);
+                startActivity(intent);
                 return true;
             case R.id.menu_remove:
                 getDownloadService().remove(song);
@@ -640,18 +648,12 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
             playlistFlipper.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.push_down_in));
             playlistFlipper.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.push_down_out));
             playlistFlipper.setDisplayedChild(0);
-            buttonBarFlipper.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.push_down_in));
-            buttonBarFlipper.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.push_down_out));
-            buttonBarFlipper.setDisplayedChild(0);
 
 
         } else {
             playlistFlipper.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.push_up_in));
             playlistFlipper.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.push_up_out));
             playlistFlipper.setDisplayedChild(1);
-            buttonBarFlipper.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.push_up_in));
-            buttonBarFlipper.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.push_up_out));
-            buttonBarFlipper.setDisplayedChild(1);
         }
     }
 

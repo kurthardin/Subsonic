@@ -36,7 +36,6 @@ import github.daneren2005.dsub.util.BackgroundTask;
 import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.PlaylistAdapter;
 import github.daneren2005.dsub.util.TabActivityBackgroundTask;
-import github.daneren2005.dsub.util.Util;
 
 import java.util.List;
 
@@ -53,7 +52,11 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_playlist);
 
-        list = (ListView) findViewById(R.id.select_playlist_list);
+        refresh();
+    }
+
+	protected void refresh() {
+		list = (ListView) findViewById(R.id.select_playlist_list);
         emptyTextView = findViewById(R.id.select_playlist_empty);
         list.setOnItemClickListener(this);
         registerForContextMenu(list);
@@ -75,32 +78,9 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
 			}
 		});
 		
-		// Button 3: Help
-        ImageButton actionHelpButton = (ImageButton)findViewById(R.id.action_button_3);
-        actionHelpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(SelectPlaylistActivity.this, HelpActivity.class));
-            }
-        });
-		
-		// Button 4: Settings
-        ImageButton actionSettingsButton = (ImageButton)findViewById(R.id.action_button_4);
-        actionSettingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            	startActivity(new Intent(SelectPlaylistActivity.this, SettingsActivity.class));
-            }
-        });
 
         load();
-    }
-
-	private void refresh() {
-		finish();
-		Intent intent = new Intent(this, SelectPlaylistActivity.class);
-		intent.putExtra(Constants.INTENT_EXTRA_NAME_REFRESH, true);
-		Util.startActivityWithoutTransition(this, intent);
+        
 	}
 
     private void load() {
@@ -140,7 +120,7 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID, playlist.getId());
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME, playlist.getName());
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_AUTOPLAY, true);
-                Util.startActivityWithoutTransition(SelectPlaylistActivity.this, intent);
+                startActivity(intent);
                 break;
 			case MENU_ITEM_PLAY_SHUFFLED:
 				intent = new Intent(SelectPlaylistActivity.this, SelectAlbumActivity.class);
@@ -148,7 +128,7 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME, playlist.getName());
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_AUTOPLAY, true);
 				intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
-                Util.startActivityWithoutTransition(SelectPlaylistActivity.this, intent);
+				startActivity(intent);
                 break;
             default:
                 return super.onContextItemSelected(menuItem);
@@ -164,7 +144,7 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
         Intent intent = new Intent(SelectPlaylistActivity.this, SelectAlbumActivity.class);
         intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID, playlist.getId());
         intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME, playlist.getName());
-        Util.startActivityWithoutTransition(SelectPlaylistActivity.this, intent);
+        startActivity(intent);
     }
 
 }

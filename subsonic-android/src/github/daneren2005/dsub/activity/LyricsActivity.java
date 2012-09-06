@@ -40,10 +40,10 @@ public final class LyricsActivity extends SubsonicTabActivity {
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.lyrics);
-        load();
+        refresh();
     }
 
-    private void load() {
+    protected void refresh() {
         BackgroundTask<Lyrics> task = new TabActivityBackgroundTask<Lyrics>(this) {
             @Override
             protected Lyrics doInBackground() throws Throwable {

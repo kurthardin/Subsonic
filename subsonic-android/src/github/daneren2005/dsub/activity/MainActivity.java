@@ -28,7 +28,6 @@ import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.MergeAdapter;
 import github.daneren2005.dsub.util.Util;
 import github.daneren2005.dsub.util.FileUtil;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -41,7 +40,6 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.PopupWindow;
 
 public class MainActivity extends SubsonicTabActivity {
 
@@ -66,8 +64,12 @@ public class MainActivity extends SubsonicTabActivity {
         }
         setContentView(R.layout.main);
 
-        loadSettings();
-
+        refresh();
+    }
+    
+    protected void refresh() {
+    	loadSettings();
+        
         View buttons = LayoutInflater.from(this).inflate(R.layout.main_buttons, null);
 
         final View serverButton = buttons.findViewById(R.id.main_select_server);
@@ -152,21 +154,21 @@ public class MainActivity extends SubsonicTabActivity {
             }
         });
 		
-		// Button 4: Settings
-        ImageButton actionSettingsButton = (ImageButton)findViewById(R.id.action_button_4);
-        actionSettingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            	startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-				
-				/*LayoutInflater inflater = (LayoutInflater)MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				PopupWindow pw = new PopupWindow(inflater.inflate(R.layout.overflow_menu, null, false), 100, 100, true);
-				pw.showAsDropDown(findViewById(R.id.action_button_4));*/
-				
-				/*PopupWindow window = new PopupWindow(findViewById(R.layout.overflow_menu));
-				window.showAsDropDown(findViewById(R.id.action_button_2));*/
-            }
-        });
+//		// Button 4: Settings
+//        ImageButton actionSettingsButton = (ImageButton)findViewById(R.id.action_button_4);
+//        actionSettingsButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//            	startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+//				
+//				/*LayoutInflater inflater = (LayoutInflater)MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//				PopupWindow pw = new PopupWindow(inflater.inflate(R.layout.overflow_menu, null, false), 100, 100, true);
+//				pw.showAsDropDown(findViewById(R.id.action_button_4));*/
+//				
+//				/*PopupWindow window = new PopupWindow(findViewById(R.layout.overflow_menu));
+//				window.showAsDropDown(findViewById(R.id.action_button_2));*/
+//            }
+//        });
 
         // Remember the current theme.
         theme = Util.getTheme(this);

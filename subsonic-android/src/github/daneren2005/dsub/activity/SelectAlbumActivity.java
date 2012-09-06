@@ -66,6 +66,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     private ImageView coverArtView;
     private boolean licenseValid;
     private ImageButton playAllButton;
+    private String mAlbumListType;
 
     /**
      * Called when the activity is first created.
@@ -74,8 +75,11 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_album);
+        refresh();
+    }
 
-        entryList = (ListView) findViewById(R.id.select_album_entries);
+    protected void refresh() {
+    	entryList = (ListView) findViewById(R.id.select_album_entries);
 
         footer = LayoutInflater.from(this).inflate(R.layout.select_album_footer, entryList, false);
         entryList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -88,7 +92,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
                         Intent intent = new Intent(SelectAlbumActivity.this, SelectAlbumActivity.class);
                         intent.putExtra(Constants.INTENT_EXTRA_NAME_ID, entry.getId());
                         intent.putExtra(Constants.INTENT_EXTRA_NAME_NAME, entry.getTitle());
-                        Util.startActivityWithoutTransition(SelectAlbumActivity.this, intent);
+                        startActivity(intent);
                     } else if (entry.isVideo()) {
                         playVideo(entry);
                     } else {
@@ -166,14 +170,14 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         String name = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_NAME);
         String playlistId = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID);
         String playlistName = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME);
-        String albumListType = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
+        mAlbumListType = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
         int albumListSize = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 0);
         int albumListOffset = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
 
         if (playlistId != null) {
             getPlaylist(playlistId, playlistName);
-        } else if (albumListType != null) {
-            getAlbumList(albumListType, albumListSize, albumListOffset);
+        } else if (mAlbumListType != null) {
+            getAlbumList(mAlbumListType, albumListSize, albumListOffset);
         } else {
             getMusicDirectory(id, name);
         }
@@ -199,23 +203,6 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
             }
         });
 		
-		// Button 3: Help
-        ImageButton actionHelpButton = (ImageButton)findViewById(R.id.action_button_3);
-        actionHelpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(SelectAlbumActivity.this, HelpActivity.class));
-            }
-        });
-		
-		// Button 4: Settings
-        ImageButton actionSettingsButton = (ImageButton)findViewById(R.id.action_button_4);
-        actionSettingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            	startActivity(new Intent(SelectAlbumActivity.this, SettingsActivity.class));
-            }
-        });
     }
 
     private void playAll(final boolean shuffle) {
@@ -236,13 +223,6 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
             download(false, false, true, false, shuffle);
             selectAll(false, false);
         }
-    }
-
-    private void refresh() {
-        finish();
-        Intent intent = getIntent();
-        intent.putExtra(Constants.INTENT_EXTRA_NAME_REFRESH, true);
-        Util.startActivityWithoutTransition(this, intent);
     }
 
     @Override
@@ -294,6 +274,10 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
                 return super.onContextItemSelected(menuItem);
         }
         return true;
+    }
+    
+    public String getAlbumListType() {
+    	return mAlbumListType;
     }
 
     private void getMusicDirectory(final String id, String name) {
@@ -356,7 +340,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
                             intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, type);
                             intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, size);
                             intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, offset);
-                            Util.startActivityWithoutTransition(SelectAlbumActivity.this, intent);
+                            startActivity(intent);
                         }
                     });
                 }
@@ -457,7 +441,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
                     getDownloadService().setSuggestedPlaylistName(playlistName);
                 }
                 if (autoplay) {
-                    Util.startActivityWithoutTransition(SelectAlbumActivity.this, DownloadActivity.class);
+                    showTabActivity(DownloadActivity.class);
                 } else if (save) {
                     Util.toast(SelectAlbumActivity.this,
                                getResources().getQuantityString(R.plurals.select_album_n_songs_downloading, songs.size(), songs.size()));

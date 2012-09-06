@@ -4,15 +4,27 @@
         android:layout_height="45dp"
         android:background="@drawable/menubar_button_disabled">
 
-    <ImageView
+    <ImageButton
+        android:id="@+id/actionbar_drawer_toggle"
+        android:src="@drawable/ic_ab_back_holo_light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:scaleType="center"
+        android:padding="5dp"
+        android:background="@drawable/actionbar_button" />
+    
+	<ImageView
             android:id="@+id/actionbar_home_icon"
             android:src="@drawable/main_header_icon2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
             android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@id/actionbar_drawer_toggle"
             android:paddingLeft="4dip"
             android:paddingRight="4dip"
             android:paddingTop="2dip"
@@ -21,26 +33,13 @@
             />
 			
 	<ImageButton
-            android:id="@+id/action_button_4"
-            android:src="@drawable/action_settings"
-            android:layout_width="44dip"
-            android:layout_height="wrap_content"
-			android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentBottom="true"
-            android:scaleType="fitCenter"
-            android:padding="5dp"
-            android:background="@drawable/actionbar_button"
-            />
-			
-	<ImageButton
             android:id="@+id/action_button_3"
-            android:src="@drawable/action_help"
+            android:src="@drawable/action_search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentBottom="true"
-			android:layout_toLeftOf="@id/action_button_4"
+			android:layout_alignParentRight="true"
             android:scaleType="center"
             android:padding="5dp"
             android:background="@drawable/actionbar_button"

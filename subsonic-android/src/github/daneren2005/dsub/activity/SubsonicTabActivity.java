@@ -23,22 +23,35 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.github.eddieringle.android.libs.undergarment.widgets.DrawerGarment;
+import com.github.eddieringle.android.libs.undergarment.widgets.DrawerGarment.IDrawerCallbacks;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.BaseAdapter;
+import android.widget.ImageButton;
+import android.widget.Spinner;
 import android.widget.TextView;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.MusicDirectory;
@@ -47,6 +60,7 @@ import github.daneren2005.dsub.service.DownloadServiceImpl;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
 import github.daneren2005.dsub.util.Constants;
+import github.daneren2005.dsub.util.FileUtil;
 import github.daneren2005.dsub.util.ImageLoader;
 import github.daneren2005.dsub.util.ModalBackgroundTask;
 import github.daneren2005.dsub.util.Util;
@@ -54,16 +68,19 @@ import github.daneren2005.dsub.util.Util;
 /**
  * @author Sindre Mehus
  */
-public class SubsonicTabActivity extends Activity {
+public abstract class SubsonicTabActivity extends Activity implements IDrawerCallbacks {
 
     private static final String TAG = SubsonicTabActivity.class.getSimpleName();
     private static ImageLoader IMAGE_LOADER;
 
     private boolean destroyed;
-    private View homeButton;
-    private View musicButton;
-    private View playlistButton;
-    private View nowPlayingButton;
+
+    private DrawerGarment mDrawer;
+    private Intent mOnDrawerClosedIntent;
+
+    private String theme;
+
+    private static boolean infoDialogDisplayed;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -78,61 +95,148 @@ public class SubsonicTabActivity extends Activity {
     @Override
     protected void onPostCreate(Bundle bundle) {
         super.onPostCreate(bundle);
+        
+        loadSettings();
 
-        homeButton = findViewById(R.id.button_bar_home);
-        homeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(SubsonicTabActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                Util.startActivityWithoutTransition(SubsonicTabActivity.this, intent);
-            }
+        mDrawer = new DrawerGarment(this, R.layout.dashboard);
+        mDrawer.setSlideTarget(DrawerGarment.SLIDE_TARGET_CONTENT);
+        mDrawer.setDrawerCallbacks(this);
+
+        final Spinner drawerServerSpinner = (Spinner) mDrawer.findViewById(R.id.dashboard_server_spinner);
+        drawerServerSpinner.setAdapter(new ServerSpinnerAdapter());
+        drawerServerSpinner.setSelection(Util.getActiveServer(this));
+        drawerServerSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+        	@Override
+        	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        		setActiveServer((int) id);
+        		// Refresh activity
+        		SubsonicTabActivity.this.refresh();
+        	}
+
+        	@Override
+        	public void onNothingSelected(AdapterView<?> parent) {
+        		// Do nothing
+        	}
         });
 
-        musicButton = findViewById(R.id.button_bar_music);
-        musicButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(SubsonicTabActivity.this, SelectArtistActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                Util.startActivityWithoutTransition(SubsonicTabActivity.this, intent);
-            }
-        });
-
-        playlistButton = findViewById(R.id.button_bar_playlists);
-        playlistButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(SubsonicTabActivity.this, SelectPlaylistActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                Util.startActivityWithoutTransition(SubsonicTabActivity.this, intent);
-            }
-        });
-
-        nowPlayingButton = findViewById(R.id.button_bar_now_playing);
+        final View nowPlayingButton = mDrawer.findViewById(R.id.dashboard_now_playing);
         nowPlayingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Util.startActivityWithoutTransition(SubsonicTabActivity.this, DownloadActivity.class);
-            }
+        	@Override
+        	public void onClick(View view) {
+        		showTabActivity(DownloadActivity.class);
+        	}
         });
 
-        if (this instanceof MainActivity) {
-            homeButton.setEnabled(false);
-        } else if (this instanceof SelectAlbumActivity || this instanceof SelectArtistActivity) {
-            musicButton.setEnabled(false);
-        } else if (this instanceof SelectPlaylistActivity) {
-            playlistButton.setEnabled(false);
-        } else if (this instanceof DownloadActivity || this instanceof LyricsActivity) {
-            nowPlayingButton.setEnabled(false);
-        }
+        final View artistsButton = mDrawer.findViewById(R.id.dashboard_artists);
+        artistsButton.setOnClickListener(new View.OnClickListener() {
+        	@Override
+        	public void onClick(View view) {
+        		showTabActivity(SelectArtistActivity.class);
+        	}
+        });
 
+        final View drawerAlbumsFrequentButton = mDrawer.findViewById(R.id.dashboard_albums_frequent);
+        drawerAlbumsFrequentButton.setOnClickListener(new OnClickListener() {
+        	@Override
+        	public void onClick(View v) {
+        		showAlbumList("frequent");
+        	}
+        });
+
+        final View drawerAlbumsHighestButton = mDrawer.findViewById(R.id.dashboard_albums_highest);
+        drawerAlbumsHighestButton.setOnClickListener(new OnClickListener() {
+        	@Override
+        	public void onClick(View v) {
+        		showAlbumList("highest");
+        	}
+        });
+
+        final View drawerAlbumsNewestButton = mDrawer.findViewById(R.id.dashboard_albums_newest);
+        drawerAlbumsNewestButton.setOnClickListener(new OnClickListener() {
+        	@Override
+        	public void onClick(View v) {
+        		showAlbumList("newest");
+        	}
+        });
+
+        final View drawerAlbumsRandomButton = mDrawer.findViewById(R.id.dashboard_albums_random);
+        drawerAlbumsRandomButton.setOnClickListener(new OnClickListener() {
+        	@Override
+        	public void onClick(View v) {
+        		showAlbumList("random");
+        	}
+        });
+
+        final View drawerAlbumsRecentButton = mDrawer.findViewById(R.id.dashboard_albums_recent);
+        drawerAlbumsRecentButton.setOnClickListener(new OnClickListener() {
+        	@Override
+        	public void onClick(View v) {
+        		showAlbumList("recent");
+        	}
+        });
+
+        final View playlistsButton = mDrawer.findViewById(R.id.dashboard_playlists);
+        playlistsButton.setOnClickListener(new View.OnClickListener() {
+        	@Override
+        	public void onClick(View view) {
+        		showTabActivity(SelectPlaylistActivity.class);
+        	}
+        });
+
+        final View helpButton = mDrawer.findViewById(R.id.dashboard_help);
+        helpButton.setOnClickListener(new View.OnClickListener() {
+        	@Override
+        	public void onClick(View view) {
+        		startActivity(HelpActivity.class);
+        	}
+        });
+
+        final View settingsButton = mDrawer.findViewById(R.id.dashboard_settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+        	@Override
+        	public void onClick(View view) {
+        		startActivity(SettingsActivity.class);
+        	}
+        });
+        
+        View actionbarUpButton = findViewById(R.id.actionbar_drawer_toggle);
+        actionbarUpButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mDrawer.toggleDrawer();
+			}
+		});
+        
+		// Button 3: Search
+        ImageButton actionSearchButton = (ImageButton)findViewById(R.id.action_button_3);
+        actionSearchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            	Intent searchIntent = new Intent(SubsonicTabActivity.this, SearchActivity.class);
+            	searchIntent.putExtra(Constants.INTENT_EXTRA_REQUEST_SEARCH, true);
+                showTabActivity(SearchActivity.class, searchIntent);
+            }
+        });
+        
         updateButtonVisibility();
+
+        // Remember the current theme.
+        theme = Util.getTheme(this);
+
+        showInfoDialog();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Restart activity if theme has changed.
+        if (theme != null && !theme.equals(Util.getTheme(this))) {
+            restart();
+        }
+
+        loadSettings();
         Util.registerMediaButtonEventReceiver(this);
     }
 
@@ -148,18 +252,15 @@ public class SubsonicTabActivity extends Activity {
         switch (item.getItemId()) {
 
             case R.id.menu_exit:
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_EXIT, true);
-                Util.startActivityWithoutTransition(this, intent);
+                exit();
                 return true;
 
             case R.id.menu_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
+                startActivity(SettingsActivity.class);
                 return true;
 
             case R.id.menu_help:
-                startActivity(new Intent(this, HelpActivity.class));
+                startActivity(HelpActivity.class);
                 return true;
         }
 
@@ -187,6 +288,15 @@ public class SubsonicTabActivity extends Activity {
         }
         return super.onKeyDown(keyCode, event);
     }
+    
+    @Override
+    public void onBackPressed() {
+    	if (mDrawer.isDrawerOpened()) {
+    		mDrawer.closeDrawer();
+    	} else {
+    		super.onBackPressed();
+    	}
+    }
 
     @Override
     public void finish() {
@@ -211,15 +321,117 @@ public class SubsonicTabActivity extends Activity {
         setTitle(getString(titleId));
     }
 
-    private void applyTheme() {
-        String theme = Util.getTheme(this);
-        if ("dark".equals(theme)) {
-            setTheme(android.R.style.Theme);
-        } else if ("light".equals(theme)) {
-            setTheme(android.R.style.Theme_Light);
+    private void loadSettings() {
+        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
+        SharedPreferences prefs = Util.getPreferences(this);
+        if (!prefs.contains(Constants.PREFERENCES_KEY_CACHE_LOCATION)) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString(Constants.PREFERENCES_KEY_CACHE_LOCATION, FileUtil.getDefaultMusicDirectory().getPath());
+            editor.commit();
         }
     }
 
+    private void showInfoDialog() {
+        if (!infoDialogDisplayed) {
+            infoDialogDisplayed = true;
+            if (Util.getRestUrl(this, null).contains("demo.subsonic.org")) {
+                Util.info(this, R.string.main_welcome_title, R.string.main_welcome_text);
+            }
+        }
+    }
+
+    private void applyTheme() {
+        String theme = Util.getTheme(this);
+//        if ("dark".equals(theme)) {
+//            setTheme(R.style.Theme_Dark);
+//        } else 
+        if ("light".equals(theme)) {
+            setTheme(R.style.Theme_Light);
+        }
+    }
+
+    private void showAlbumList(String type) {		
+        Intent intent = new Intent(this, SelectAlbumActivity.class);
+        intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, type);
+        intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 20);
+        intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
+        showTabActivity(SelectAlbumActivity.class, intent);
+	}
+    
+    public void showTabActivity(Class<? extends SubsonicTabActivity> activityClass) {
+        Intent intent = new Intent(this, activityClass);
+        showTabActivity(activityClass, intent);
+    }
+    
+    public void showTabActivity(Class<? extends SubsonicTabActivity> activityClass, Intent intent) {
+//    	intent.putExtra(Constants.INTENT_EXTRA_IS_TOP_LEVEL_ACTIVITY, true);
+    	boolean isIdenticalActivity = (activityClass == this.getClass());
+    	if (this instanceof SelectAlbumActivity && activityClass == SelectAlbumActivity.class) {
+    		SelectAlbumActivity selectAlbumActivity = (SelectAlbumActivity) this;
+    		String oldAlbumListType = selectAlbumActivity.getAlbumListType();
+    		if (oldAlbumListType != null) {
+    			String newAlbumListType = intent.getStringExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
+    			isIdenticalActivity &= (oldAlbumListType.compareTo(newAlbumListType) == 0);
+    		} else {
+    			isIdenticalActivity = false;
+    		}
+    	}
+    	
+    	if (isIdenticalActivity) {
+    		refresh();
+        	mDrawer.closeDrawer(true);
+    	} else {
+    		startActivityWithDrawerCheck(intent);
+    	}
+    }
+    
+    public void startActivity(Class<? extends Activity> activityClass) {
+    	startActivityWithDrawerCheck(new Intent(this, activityClass));
+    }
+    
+    @Override
+    public void startActivity(Intent intent) {
+    	startActivityWithDrawerCheck(intent);
+    }
+    
+    private void startActivityWithDrawerCheck(Intent intent) {
+    	
+    	if (mDrawer != null && mDrawer.isDrawerOpened()) {
+			mOnDrawerClosedIntent = intent;
+	    	mDrawer.closeDrawer(true);
+		} else {
+			performStartActivity(intent);
+		}
+    }
+    
+    private void performStartActivity(Intent intent) {
+    	super.startActivity(intent);
+    	mOnDrawerClosedIntent = null;
+    }
+
+    private void setActiveServer(int instance) {
+        if (Util.getActiveServer(this) != instance) {
+            DownloadService service = getDownloadService();
+            if (service != null) {
+                service.clearIncomplete();
+            }
+            Util.setActiveServer(this, instance);
+        }
+    }
+    
+    protected abstract void refresh();
+
+    private void restart() {
+    	Intent intent = new Intent(getIntent());
+    	intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    	startActivity(intent);
+    }
+
+    private void exit() {
+        stopService(new Intent(this, DownloadServiceImpl.class));
+        finish();
+    }
+    
     public boolean isDestroyed() {
         return destroyed;
     }
@@ -240,6 +452,16 @@ public class SubsonicTabActivity extends Activity {
         if (view != null) {
             view.setText(message);
         }
+    }
+    
+    public void onDrawerOpened() {
+    	// Do nothing...
+    }
+
+    public void onDrawerClosed() {
+    	if (mOnDrawerClosedIntent != null) {
+    		performStartActivity(mOnDrawerClosedIntent);
+    	}
     }
 
     public DownloadService getDownloadService() {
@@ -310,7 +532,7 @@ public class SubsonicTabActivity extends Activity {
                     }
                     warnIfNetworkOrStorageUnavailable();
                     downloadService.download(songs, save, autoplay, false, shuffle);
-                    Util.startActivityWithoutTransition(SubsonicTabActivity.this, DownloadActivity.class);
+                    showTabActivity(DownloadActivity.class);
                 }
             }
         };
@@ -347,7 +569,7 @@ public class SubsonicTabActivity extends Activity {
                 PackageInfo packageInfo = context.getPackageManager().getPackageInfo("github.daneren2005.dsub", 0);
                 file = new File(Environment.getExternalStorageDirectory(), "subsonic-stacktrace.txt");
                 printWriter = new PrintWriter(file);
-                printWriter.println("Android API level: " + Build.VERSION.SDK);
+                printWriter.println("Android API level: " + Build.VERSION.SDK_INT);
                 printWriter.println("Subsonic version name: " + packageInfo.versionName);
                 printWriter.println("Subsonic version code: " + packageInfo.versionCode);
                 printWriter.println();
@@ -363,6 +585,45 @@ public class SubsonicTabActivity extends Activity {
 
             }
         }
+    }
+    
+    private class ServerSpinnerAdapter extends BaseAdapter {
+
+		@Override
+		public int getCount() {
+			return 4;
+		}
+
+		@Override
+		public String getItem(int position) {
+			return Util.getServerName(getBaseContext(), position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getDropDownView(int position, View convertView, ViewGroup parent) {
+			return getView(position, convertView, parent, R.layout.simple_spinner_dropdown_item);
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			return getView(position, convertView, parent, R.layout.simple_spinner_item);
+		}
+		
+		public View getView(int position, View convertView, ViewGroup parent, int layoutResId) {
+			TextView v = (TextView) convertView;
+		    if (v == null) {
+		        LayoutInflater vi = (LayoutInflater) getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		        v = (TextView) vi.inflate(layoutResId, null);
+		    }
+		    v.setText(getItem(position));
+			return v;
+		}
+    	
     }
 }
 

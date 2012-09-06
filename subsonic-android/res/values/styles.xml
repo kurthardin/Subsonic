@@ -1,14 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="Wheat" parent="android:Theme.Light">
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <style name="Dashboard.TextAppearance" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@color/dashboard_text</item>
+    </style>
+    
+    <style name="Dashboard.Spinner" parent="@android:style/Widget.Spinner">
+        <item name="android:layout_marginTop">10dip</item>
+        <item name="android:layout_marginBottom">10dip</item>
+    </style>
+    
+    <style name="Dashboard.SpinnerDropDownItem" parent="@android:style/Widget.DropDownItem.Spinner">
+        <item name="android:textAppearance">@style/Dashboard.TextAppearance</item>
+    </style>
+    
+    <style name="Dashboard.SpinnerItem" parent="@android:style/Widget.TextView.SpinnerItem">
+        <item name="android:textAppearance">@style/Dashboard.TextAppearance</item>
+    </style>
+    
+    <style name="Dashboard.ListSeparator" parent="@android:attr/listSeparatorTextViewStyle">
+        <item name="android:background">@color/dashboard_separator</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dip</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:layout_marginTop">10dip</item>
+        <item name="android:layout_marginBottom">10dip</item>
+        <item name="android:layout_marginLeft">5dip</item>
+        <item name="android:layout_marginRight">5dip</item>
+    </style>
+    
+    <style name="Dashboard.ListItem" parent="@style/Dashboard.TextAppearance">
+        <item name="android:layout_marginTop">10dip</item>
+        <item name="android:layout_marginBottom">10dip</item>
+    </style>
+    
+    <style name="Theme.Wheat" parent="android:Theme.Light">
         <item name="android:windowBackground">@color/wheatBackground</item>
         <item name="android:textColorPrimary">@color/wheatForeground1</item>
         <item name="android:textColorSecondary">@color/wheatForeground2</item>
-        <item name="android:listViewStyle">@style/WheatListView</item>
+        <item name="android:listViewStyle">@style/Widget.Wheat.ListView</item>
     </style>
 
-    <style name="WheatListView" parent="android:style/Widget.ListView.White">
+    <style name="Widget.Wheat.ListView" parent="android:style/Widget.ListView.White">
         <item name="android:cacheColorHint">@color/wheatBackground</item>
     </style>
+    
+    <style name="Theme.Light" parent="android:Theme.Light" />
+    
+    <style name="Theme.Dark" parent="android:Theme" />
 
 </resources>

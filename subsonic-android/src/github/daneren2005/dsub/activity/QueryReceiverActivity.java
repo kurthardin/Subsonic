@@ -48,7 +48,7 @@ public class QueryReceiverActivity extends Activity {
 
             Intent intent = new Intent(QueryReceiverActivity.this, SearchActivity.class);
             intent.putExtra(Constants.INTENT_EXTRA_NAME_QUERY, query);
-            Util.startActivityWithoutTransition(QueryReceiverActivity.this, intent);
+            startActivity(intent);
         }
         finish();
         Util.disablePendingTransition(this);

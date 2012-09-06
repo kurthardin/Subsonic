@@ -18,21 +18,17 @@
 
     <supports-screens android:anyDensity="true" android:xlargeScreens="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true"/>
 
-    <application android:label="@string/common.appname" android:icon="@drawable/launch2" android:theme="@style/Wheat">
-
-        <activity android:name="github.daneren2005.dsub.activity.MainActivity"
+    <application android:label="@string/common.appname" android:icon="@drawable/launch2" android:theme="@style/Theme.Dark">
+        
+        <activity android:name="github.daneren2005.dsub.activity.SelectArtistActivity"
                   android:label="DSub"
                   android:configChanges="orientation|keyboardHidden"
                   android:launchMode="standard">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
+            </intent-filter> 
         </activity>
-
-        <activity android:name="github.daneren2005.dsub.activity.SelectArtistActivity"
-                  android:configChanges="orientation|keyboardHidden"
-                  android:launchMode="standard"/>
 
         <activity android:name="github.daneren2005.dsub.activity.SelectAlbumActivity"
                   android:configChanges="orientation|keyboardHidden"/>
@@ -52,7 +48,7 @@
                   android:launchMode="singleTask"/>
 
         <activity android:name="github.daneren2005.dsub.activity.SettingsActivity"
-                  android:theme="@android:style/Theme"
+                  android:theme="@style/Theme.Dark"
                   android:configChanges="orientation|keyboardHidden"
                   android:launchMode="singleTask"/>
 
@@ -112,6 +108,7 @@
 
         <meta-data android:name="android.app.default_searchable"
                    android:value="github.daneren2005.dsub.activity.QueryReceiverActivity"/>
+        
 
     </application>
 

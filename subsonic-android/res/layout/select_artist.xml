@@ -8,9 +8,13 @@
 
     <View
             android:layout_width="fill_parent"
-            android:layout_height="1px"
+            android:layout_height="1dp"
             android:background="@color/dividerColor"/>
-
+	
+    <include
+        android:id="@+id/select_artist_folder"
+        layout="@layout/select_artist_header" />
+    
     <include layout="@layout/tab_progress"/>
 
     <ListView android:id="@+id/select_artist_list"
@@ -19,8 +23,6 @@
               android:layout_width="fill_parent"
               android:layout_height="0dip"
               android:layout_weight="1.0"/>
-
-    <include layout="@layout/button_bar"/>
 
 </LinearLayout>
 

@@ -11,6 +11,16 @@
             android:layout_height="1px"
             android:background="@color/dividerColor"/>
 
+    <TextView
+            android:id="@+id/search_no_results_text"
+            android:text="@string/search.no_match"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="0dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="center"
+            android:padding="12dp"/>
+
     <include layout="@layout/tab_progress"/>
 
     <ListView
@@ -20,7 +30,5 @@
             android:layout_weight="1.0"
             android:fastScrollEnabled="true"
             />
-
-    <include layout="@layout/button_bar"/>
 
 </LinearLayout>
