@@ -15,8 +15,11 @@
     <!-- For dashboard -->
     <color name="foreground_dashboard">#fff3f3f3</color>
     <color name="foreground_disabled_dashboard">#ff4c4c4c</color>
-    
-    <color name="actionbar_title_color">#224894</color>
+
+    <color name="actionbar_background_light">#fff3f3f3</color> <!-- previously: #eee -->    
+    <color name="actionbar_background_dark">#ff000000</color>
+    <color name="actionbar_title_light">@color/actionbar_background_dark</color>
+    <color name="actionbar_title_dark">@color/actionbar_background_light</color>
     
     <color name="dashboard_background">#303030</color>
     <color name="dashboard_separator">#808080</color>
