@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     
+    <!-- ActionBar styles -->
+    <style name="ActionBar.Light" parent="android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">#eee</item>
+        <item name="android:titleTextStyle">@style/ActionBarTitle.Light</item>
+        <item name="android:icon">@drawable/main_header_icon2</item>
+    </style>
+
+    <style name="ActionBarTitle.Light">
+        <item name="android:textColor">@color/actionbar_title_color</item>
+    </style>
+    
+    <!-- Dashboard styles -->
     <style name="Dashboard.Spinner" parent="@android:style/Widget.Holo.Spinner">
         <item name="android:layout_marginTop">10dip</item>
         <item name="android:layout_marginBottom">10dip</item>
@@ -14,6 +26,7 @@
         <item name="android:textAppearance">@style/Dashboard.TextAppearance</item>
     </style>
     
+    <!-- Themes -->
     <style name="Theme.Wheat" parent="android:Theme.Holo.Light">
         <item name="android:windowBackground">@color/wheatBackground</item>
         <item name="android:textColorPrimary">@color/wheatForeground1</item>
@@ -25,7 +38,12 @@
         <item name="android:cacheColorHint">@color/wheatBackground</item>
     </style>
     
-    <style name="Theme.Light" parent="android:Theme.Holo.Light" />
+    <style name="Theme.Light" parent="android:Theme.Holo.Light">
+        <!--  
+		<item name="android:actionBarStyle">@style/ActionBar.Light</item>
+        <item name="android:windowContentOverlay">@drawable/actionbar_shadow</item>
+         -->        
+    </style>
     
     <style name="Theme.Dark" parent="android:Theme.Holo" />
 

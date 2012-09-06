@@ -22,12 +22,12 @@ package github.daneren2005.dsub.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import github.daneren2005.dsub.R;
@@ -65,7 +65,7 @@ public class SelectArtistActivity extends SubsonicTabActivity implements Adapter
         artistList = (ListView) findViewById(R.id.select_artist_list);
         artistList.setOnItemClickListener(this);
         
-        folderButton = findViewById(R.id.select_artist_folder); //LayoutInflater.from(this).inflate(R.layout.select_artist_header, artistList, false);
+        folderButton = findViewById(R.id.select_artist_folder);
     	folderButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -85,30 +85,7 @@ public class SelectArtistActivity extends SubsonicTabActivity implements Adapter
         registerForContextMenu(artistList);
 
         setTitle(Util.isOffline(this) ? R.string.music_library_label_offline : R.string.music_library_label);
-
-        // Button 1: shuffle
-        ImageButton shuffleButton = (ImageButton) findViewById(R.id.action_button_1);
-        shuffleButton.setImageResource(R.drawable.action_shuffle);
-        shuffleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(SelectArtistActivity.this, DownloadActivity.class);
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
-                showTabActivity(DownloadActivity.class, intent);
-            }
-        });
-
-        // Button 2: refresh
-        ImageButton refreshButton = (ImageButton) findViewById(R.id.action_button_2);
-        refreshButton.setImageResource(R.drawable.action_refresh);
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                refresh();
-            }
-        });
 		
-        
     	musicFolders = null;
     	load();
     	
@@ -164,6 +141,32 @@ public class SelectArtistActivity extends SubsonicTabActivity implements Adapter
     	intent.putExtra(Constants.INTENT_EXTRA_NAME_ID, artist.getId());
     	intent.putExtra(Constants.INTENT_EXTRA_NAME_NAME, artist.getName());
     	startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.select_artist_options, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        
+	        case R.id.action_refresh:
+	        	refresh();
+	        	return true;
+	        	
+	        case R.id.action_shuffle:
+	        	Intent intent = new Intent(SelectArtistActivity.this, DownloadActivity.class);
+                intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
+                showTabActivity(DownloadActivity.class, intent);
+                return true;
+
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

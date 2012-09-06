@@ -16,6 +16,8 @@
     <color name="foreground_dashboard">#fff3f3f3</color>
     <color name="foreground_disabled_dashboard">#ff4c4c4c</color>
     
+    <color name="actionbar_title_color">#224894</color>
+    
     <color name="dashboard_background">#303030</color>
     <color name="dashboard_separator">#808080</color>
     <color name="dashboard_separator_blue">#ff33b5e5</color>

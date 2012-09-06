@@ -31,7 +31,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,15 +44,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import github.daneren2005.dsub.R;
+import github.daneren2005.dsub.compat.ActionBarActivity;
+import github.daneren2005.dsub.compat.ActionBarHelper;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
@@ -68,7 +67,7 @@ import github.daneren2005.dsub.util.Util;
 /**
  * @author Sindre Mehus
  */
-public abstract class SubsonicTabActivity extends Activity implements IDrawerCallbacks {
+public abstract class SubsonicTabActivity extends ActionBarActivity implements IDrawerCallbacks {
 
     private static final String TAG = SubsonicTabActivity.class.getSimpleName();
     private static ImageLoader IMAGE_LOADER;
@@ -87,7 +86,6 @@ public abstract class SubsonicTabActivity extends Activity implements IDrawerCal
         setUncaughtExceptionHandler();
         applyTheme();
         super.onCreate(bundle);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         startService(new Intent(this, DownloadServiceImpl.class));
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
@@ -97,6 +95,9 @@ public abstract class SubsonicTabActivity extends Activity implements IDrawerCal
         super.onPostCreate(bundle);
         
         loadSettings();
+        
+        ActionBarHelper actionBar = getActionBarHelper();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         mDrawer = new DrawerGarment(this, R.layout.dashboard);
         mDrawer.setSlideTarget(DrawerGarment.SLIDE_TARGET_CONTENT);
@@ -200,26 +201,7 @@ public abstract class SubsonicTabActivity extends Activity implements IDrawerCal
         	}
         });
         
-        View actionbarUpButton = findViewById(R.id.actionbar_drawer_toggle);
-        actionbarUpButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				mDrawer.toggleDrawer();
-			}
-		});
-        
-		// Button 3: Search
-        ImageButton actionSearchButton = (ImageButton)findViewById(R.id.action_button_3);
-        actionSearchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            	Intent searchIntent = new Intent(SubsonicTabActivity.this, SearchActivity.class);
-            	searchIntent.putExtra(Constants.INTENT_EXTRA_REQUEST_SEARCH, true);
-                showTabActivity(SearchActivity.class, searchIntent);
-            }
-        });
-        
-        updateButtonVisibility();
+//        updateButtonVisibility();
 
         // Remember the current theme.
         theme = Util.getTheme(this);
@@ -244,24 +226,23 @@ public abstract class SubsonicTabActivity extends Activity implements IDrawerCal
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-
-            case R.id.menu_exit:
-                exit();
+        
+	        case android.R.id.home:
+	        	mDrawer.toggleDrawer();
+	        	return true;
+	        	
+	        case R.id.action_search:
+	        	Intent searchIntent = new Intent(SubsonicTabActivity.this, SearchActivity.class);
+            	searchIntent.putExtra(Constants.INTENT_EXTRA_REQUEST_SEARCH, true);
+                showTabActivity(SearchActivity.class, searchIntent);
                 return true;
 
-            case R.id.menu_settings:
-                startActivity(SettingsActivity.class);
-                return true;
-
-            case R.id.menu_help:
-                startActivity(HelpActivity.class);
-                return true;
         }
 
         return false;
@@ -304,17 +285,17 @@ public abstract class SubsonicTabActivity extends Activity implements IDrawerCal
         Util.disablePendingTransition(this);
     }
 
-    @Override
-    public void setTitle(CharSequence title) {
-        super.setTitle(title);
-
-        // Set the font of title in the action bar.
-        TextView text = (TextView) findViewById(R.id.actionbar_title_text);
-        Typeface typeface = Typeface.createFromAsset(getAssets(), "fonts/Storopia.ttf");
-        text.setTypeface(typeface);
-
-        text.setText(title);
-    }
+//    @Override
+//    public void setTitle(CharSequence title) {
+//        super.setTitle(title);
+//
+//        // Set the font of title in the action bar.
+//        TextView text = (TextView) findViewById(R.id.actionbar_title_text);
+//        Typeface typeface = Typeface.createFromAsset(getAssets(), "fonts/Storopia.ttf");
+//        text.setTypeface(typeface);
+//
+//        text.setText(title);
+//    }
 
     @Override
     public void setTitle(int titleId) {
@@ -364,7 +345,6 @@ public abstract class SubsonicTabActivity extends Activity implements IDrawerCal
     }
     
     public void showTabActivity(Class<? extends SubsonicTabActivity> activityClass, Intent intent) {
-//    	intent.putExtra(Constants.INTENT_EXTRA_IS_TOP_LEVEL_ACTIVITY, true);
     	boolean isIdenticalActivity = (activityClass == this.getClass());
     	if (this instanceof SelectAlbumActivity && activityClass == SelectAlbumActivity.class) {
     		SelectAlbumActivity selectAlbumActivity = (SelectAlbumActivity) this;
@@ -436,9 +416,9 @@ public abstract class SubsonicTabActivity extends Activity implements IDrawerCal
         return destroyed;
     }
 
-    private void updateButtonVisibility() {
-        int visibility = Util.isOffline(this) ? View.GONE : View.VISIBLE;
-    }
+//    private void updateButtonVisibility() {
+//        int visibility = Util.isOffline(this) ? View.GONE : View.VISIBLE;
+//    }
 
     public void setProgressVisible(boolean visible) {
         View view = findViewById(R.id.tab_progress);
