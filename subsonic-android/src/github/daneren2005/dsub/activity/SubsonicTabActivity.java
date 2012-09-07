@@ -100,6 +100,8 @@ public abstract class SubsonicTabActivity extends SherlockActivity implements ID
         
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+        
+        setProgressVisible(false);
 
         mDrawer = new DrawerGarment(this, R.layout.dashboard);
         mDrawer.setSlideTarget(DrawerGarment.SLIDE_TARGET_WINDOW);
