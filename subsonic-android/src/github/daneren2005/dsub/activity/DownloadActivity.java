@@ -127,14 +127,6 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
         swipeDistance = (d.getWidth() + d.getHeight()) * PERCENTAGE_OF_SCREEN_FOR_SWIPE / 100;
         swipeVelocity = (d.getWidth() + d.getHeight()) * PERCENTAGE_OF_SCREEN_FOR_SWIPE / 100;
         gestureScanner = new GestureDetector(this);
-        
-        // Button 1: play all
-        ImageButton actionButton1 = (ImageButton) findViewById(R.id.action_button_1);
-        actionButton1.setVisibility(View.GONE);
-
-        // Button 2: refresh
-        ImageButton actionButton2 = (ImageButton) findViewById(R.id.action_button_2);
-        actionButton2.setVisibility(View.GONE);
 
         playlistFlipper = (ViewFlipper) findViewById(R.id.download_playlist_flipper);
         emptyTextView = (TextView) findViewById(R.id.download_empty);
@@ -497,7 +489,7 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.nowplaying, menu);
-		return true;
+		return super.onCreateOptionsMenu(menu);
 	}
 
     @Override
