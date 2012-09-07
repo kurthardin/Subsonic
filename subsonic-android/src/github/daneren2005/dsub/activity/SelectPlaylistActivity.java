@@ -22,11 +22,8 @@ package github.daneren2005.dsub.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.Playlist;
@@ -38,6 +35,10 @@ import github.daneren2005.dsub.util.PlaylistAdapter;
 import github.daneren2005.dsub.util.TabActivityBackgroundTask;
 
 import java.util.List;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 public class SelectPlaylistActivity extends SubsonicTabActivity implements AdapterView.OnItemClickListener {
 
@@ -64,21 +65,6 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
         // Title: Playlists
         setTitle(R.string.playlist_label);
 
-        // Button 1: gone
-        ImageButton searchButton = (ImageButton)findViewById(R.id.action_button_1);
-        searchButton.setVisibility(View.GONE);
-
-		// Button 2: refresh
-        ImageButton refreshButton = (ImageButton) findViewById(R.id.action_button_2);
-		refreshButton.setImageResource(R.drawable.action_refresh);
-		refreshButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				refresh();
-			}
-		});
-		
-
         load();
         
 	}
@@ -102,6 +88,26 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getSupportMenuInflater();
+        inflater.inflate(R.menu.select_playlist_options, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        
+	        case R.id.action_refresh:
+	        	refresh();
+	        	return true;
+	        
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
         menu.add(Menu.NONE, MENU_ITEM_PLAY_ALL, MENU_ITEM_PLAY_ALL, R.string.common_play_now);
@@ -109,7 +115,7 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem menuItem) {
+    public boolean onContextItemSelected(android.view.MenuItem menuItem) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
         Playlist playlist = (Playlist) list.getItemAtPosition(info.position);
 
