@@ -91,12 +91,6 @@ public class SearchActivity extends SubsonicTabActivity {
         searchResultsText = (TextView) findViewById(R.id.search_no_results_text);
         list = (ListView) findViewById(R.id.search_list);
 
-		// Button 1: gone
-		findViewById(R.id.action_button_1).setVisibility(View.GONE);
-
-        // Button 2: gone
-		findViewById(R.id.action_button_2).setVisibility(View.GONE);
-
         View buttons = LayoutInflater.from(this).inflate(R.layout.search_buttons, null);
         artistsHeading = buttons.findViewById(R.id.search_artists);
         albumsHeading = buttons.findViewById(R.id.search_albums);

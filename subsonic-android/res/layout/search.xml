@@ -4,13 +4,6 @@
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
 
-    <include layout="@layout/action_bar"/>
-
-    <View
-            android:layout_width="fill_parent"
-            android:layout_height="1px"
-            android:background="@color/dividerColor"/>
-
     <TextView
             android:id="@+id/search_no_results_text"
             android:text="@string/search.no_match"
