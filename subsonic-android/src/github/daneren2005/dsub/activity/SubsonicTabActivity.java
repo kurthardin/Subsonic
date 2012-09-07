@@ -327,7 +327,7 @@ public abstract class SubsonicTabActivity extends SherlockActivity implements ID
 //            setTheme(R.style.Theme_Dark);
 //        } else 
         if ("light".equals(theme)) {
-            setTheme(R.style.Theme_Light);
+            setTheme(R.style.Theme_Sherlock_Light);
         }
     }
 

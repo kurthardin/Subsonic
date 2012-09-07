@@ -1,74 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	
-    
-    <!-- ActionBarCompat base styles -->	
-	
-    <style name="ActionBarCompatItemBase">
-        <!-- layout_width/height must be set in code -->
-        <item name="android:scaleType">center</item>
-    </style>    
-
-    <style name="ActionBarCompatTitleBase">
-        <item name="android:id">@id/actionbar_compat_title</item>
-        <!-- layout_width/height/weight must be set in code -->
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:textSize">18sp</item>
-        <item name="android:paddingLeft">6dp</item>
-        <item name="android:paddingRight">6dp</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:ellipsize">marquee</item>
-    </style>
-    
-    
-    <!-- ActionBarCompat light theme styles -->
-    
-    <style name="ActionBarCompat_Light">
-        <item name="android:background">@color/actionbar_background_light</item>
-    </style>
-
-    <style name="ActionBarCompatProgressIndicator_Light" parent="android:style/Widget.ProgressBar.Large">
-        <item name="android:indeterminate">true</item>
-    </style>
-
-    <style name="ActionBarCompatTitle_Light" parent="style/ActionBarCompatTitleBase">
-        <item name="android:textColor">@color/actionbar_title_light</item>
-    </style>
-
-    <style name="ActionBarCompatItemBase_Light" parent="style/ActionBarCompatItemBase">
-        <item name="android:background">@drawable/actionbar_compat_item_light</item>
-    </style>
-
-    <style name="ActionBarCompatItem_Light" parent="style/ActionBarCompatItemBase_Light">
-    </style>
-
-    <style name="ActionBarCompatHomeItem_Light" parent="style/ActionBarCompatItemBase_Light">
-    </style>
-    
-    
-    <!-- ActionBarCompat dark theme styles -->
-    
-    <style name="ActionBarCompat_Dark">
-        <item name="android:background">@color/actionbar_background_dark</item>
-    </style>
-
-    <style name="ActionBarCompatProgressIndicator_Dark" parent="android:style/Widget.ProgressBar.Large.Inverse">
-        <item name="android:indeterminate">true</item>
-    </style>
-
-    <style name="ActionBarCompatTitle_Dark" parent="style/ActionBarCompatTitleBase">
-        <item name="android:textColor">@android:color/primary_text_dark</item>
-    </style>
-
-    <style name="ActionBarCompatItemBase_Dark" parent="style/ActionBarCompatItemBase">
-        <item name="android:background">@drawable/actionbar_compat_item_dark</item>
-    </style>
-
-    <style name="ActionBarCompatItem_Dark" parent="style/ActionBarCompatItemBase_Dark">
-    </style>
-
-    <style name="ActionBarCompatHomeItem_Dark" parent="style/ActionBarCompatItemBase_Dark">
-    </style>
     
     
     <!-- Dashboard styles -->
@@ -119,35 +50,5 @@
     <style name="Widget.Wheat.ListView" parent="android:style/Widget.ListView.White">
         <item name="android:cacheColorHint">@color/wheatBackground</item>
     </style>
-    <!-- 
-    <style name="Theme.Light" parent="android:Theme.Light">
-        <item name="android:windowTitleSize">@dimen/actionbar_compat_height</item>
-        <item name="android:windowTitleBackgroundStyle">@style/ActionBarCompat_Light</item>
-        <item name="android:windowContentOverlay">@null</item>
-        
-        <!- for programmatic instantiation -> 
-        <item name="actionbarCompatTitleStyle">@style/ActionBarCompatTitle_Light</item>
-        <item name="actionbarCompatItemStyle">@style/ActionBarCompatItem_Light</item>
-        <item name="actionbarCompatItemHomeStyle">@style/ActionBarCompatHomeItem_Light</item>
-        <item name="actionbarCompatProgressIndicatorStyle">@style/ActionBarCompatProgressIndicator_Light</item>
-    </style>
-    -->
-    <style name="Theme.Light" parent="Theme.Sherlock.Light"/>
-    
-    <!--  
-    <style name="Theme.Dark" parent="android:Theme">
-        <item name="android:windowTitleSize">@dimen/actionbar_compat_height</item>
-        <item name="android:windowTitleBackgroundStyle">@style/ActionBarCompat_Dark</item>
-        <item name="android:windowContentOverlay">@null</item>
-		
-        <!- for programmatic instantiation ->
-        <item name="actionbarCompatTitleStyle">@style/ActionBarCompatTitle_Dark</item>
-        <item name="actionbarCompatItemStyle">@style/ActionBarCompatItem_Dark</item>
-        <item name="actionbarCompatItemHomeStyle">@style/ActionBarCompatHomeItem_Dark</item>
-        <item name="actionbarCompatProgressIndicatorStyle">@style/ActionBarCompatProgressIndicator_Dark</item>
-        
-    </style>
-	-->
-	<style name="Theme.Dark" parent="Theme.Sherlock"/>
 	    
 </resources>

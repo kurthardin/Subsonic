@@ -154,21 +154,21 @@ public class MainActivity extends SubsonicTabActivity {
             }
         });
 		
-//		// Button 4: Settings
-//        ImageButton actionSettingsButton = (ImageButton)findViewById(R.id.action_button_4);
-//        actionSettingsButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//            	startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-//				
-//				/*LayoutInflater inflater = (LayoutInflater)MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//				PopupWindow pw = new PopupWindow(inflater.inflate(R.layout.overflow_menu, null, false), 100, 100, true);
-//				pw.showAsDropDown(findViewById(R.id.action_button_4));*/
-//				
-//				/*PopupWindow window = new PopupWindow(findViewById(R.layout.overflow_menu));
-//				window.showAsDropDown(findViewById(R.id.action_button_2));*/
-//            }
-//        });
+		// Button 4: Settings
+        ImageButton actionSettingsButton = (ImageButton)findViewById(R.id.action_button_4);
+        actionSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            	startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+				
+				/*LayoutInflater inflater = (LayoutInflater)MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				PopupWindow pw = new PopupWindow(inflater.inflate(R.layout.overflow_menu, null, false), 100, 100, true);
+				pw.showAsDropDown(findViewById(R.id.action_button_4));*/
+				
+				/*PopupWindow window = new PopupWindow(findViewById(R.layout.overflow_menu));
+				window.showAsDropDown(findViewById(R.id.action_button_2));*/
+            }
+        });
 
         // Remember the current theme.
         theme = Util.getTheme(this);

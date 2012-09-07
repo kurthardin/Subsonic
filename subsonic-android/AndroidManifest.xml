@@ -18,7 +18,7 @@
 
     <supports-screens android:anyDensity="true" android:xlargeScreens="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true"/>
 
-    <application android:label="@string/common.appname" android:icon="@drawable/launch2" android:theme="@style/Theme.Dark">
+    <application android:label="@string/common.appname" android:icon="@drawable/launch2" android:theme="@style/Theme.Sherlock">
         
         <activity android:name="github.daneren2005.dsub.activity.SelectArtistActivity"
                   android:label="DSub"
@@ -48,7 +48,7 @@
                   android:launchMode="singleTask"/>
 
         <activity android:name="github.daneren2005.dsub.activity.SettingsActivity"
-                  android:theme="@style/Theme.Dark"
+                  android:theme="@style/Theme.Sherlock"
                   android:configChanges="orientation|keyboardHidden"
                   android:launchMode="singleTask"/>
 
