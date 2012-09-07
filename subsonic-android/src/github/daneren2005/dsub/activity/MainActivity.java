@@ -121,54 +121,54 @@ public class MainActivity extends SubsonicTabActivity {
         // Title: Subsonic
         setTitle(R.string.common_appname);
 
-        // Button 1: shuffle
-        ImageButton actionShuffleButton = (ImageButton)findViewById(R.id.action_button_1);
-        actionShuffleButton.setImageResource(R.drawable.action_shuffle);
-        actionShuffleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, DownloadActivity.class);
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
-                Util.startActivityWithoutTransition(MainActivity.this, intent);
-            }
-        });
-
-        // Button 2: search
-        ImageButton actionSearchButton = (ImageButton)findViewById(R.id.action_button_2);
-        actionSearchButton.setImageResource(R.drawable.action_search);
-        actionSearchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            	Intent intent = new Intent(MainActivity.this, SearchActivity.class);
-            	intent.putExtra(Constants.INTENT_EXTRA_REQUEST_SEARCH, true);
-                Util.startActivityWithoutTransition(MainActivity.this, intent);
-            }
-        });
-		
-		// Button 3: Help
-        ImageButton actionHelpButton = (ImageButton)findViewById(R.id.action_button_3);
-        actionHelpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, HelpActivity.class));
-            }
-        });
-		
-		// Button 4: Settings
-        ImageButton actionSettingsButton = (ImageButton)findViewById(R.id.action_button_4);
-        actionSettingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            	startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-				
-				/*LayoutInflater inflater = (LayoutInflater)MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				PopupWindow pw = new PopupWindow(inflater.inflate(R.layout.overflow_menu, null, false), 100, 100, true);
-				pw.showAsDropDown(findViewById(R.id.action_button_4));*/
-				
-				/*PopupWindow window = new PopupWindow(findViewById(R.layout.overflow_menu));
-				window.showAsDropDown(findViewById(R.id.action_button_2));*/
-            }
-        });
+//        // Button 1: shuffle
+//        ImageButton actionShuffleButton = (ImageButton)findViewById(R.id.action_button_1);
+//        actionShuffleButton.setImageResource(R.drawable.action_shuffle);
+//        actionShuffleButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent intent = new Intent(MainActivity.this, DownloadActivity.class);
+//                intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
+//                Util.startActivityWithoutTransition(MainActivity.this, intent);
+//            }
+//        });
+//
+//        // Button 2: search
+//        ImageButton actionSearchButton = (ImageButton)findViewById(R.id.action_button_2);
+//        actionSearchButton.setImageResource(R.drawable.action_search);
+//        actionSearchButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//            	Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+//            	intent.putExtra(Constants.INTENT_EXTRA_REQUEST_SEARCH, true);
+//                Util.startActivityWithoutTransition(MainActivity.this, intent);
+//            }
+//        });
+//		
+//		// Button 3: Help
+//        ImageButton actionHelpButton = (ImageButton)findViewById(R.id.action_button_3);
+//        actionHelpButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                startActivity(new Intent(MainActivity.this, HelpActivity.class));
+//            }
+//        });
+//		
+//		// Button 4: Settings
+//        ImageButton actionSettingsButton = (ImageButton)findViewById(R.id.action_button_4);
+//        actionSettingsButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//            	startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+//				
+//				/*LayoutInflater inflater = (LayoutInflater)MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//				PopupWindow pw = new PopupWindow(inflater.inflate(R.layout.overflow_menu, null, false), 100, 100, true);
+//				pw.showAsDropDown(findViewById(R.id.action_button_4));*/
+//				
+//				/*PopupWindow window = new PopupWindow(findViewById(R.layout.overflow_menu));
+//				window.showAsDropDown(findViewById(R.id.action_button_2));*/
+//            }
+//        });
 
         // Remember the current theme.
         theme = Util.getTheme(this);
