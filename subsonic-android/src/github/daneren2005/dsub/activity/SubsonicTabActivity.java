@@ -28,6 +28,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.Window;
 import com.github.eddieringle.android.libs.undergarment.widgets.DrawerGarment;
 import com.github.eddieringle.android.libs.undergarment.widgets.DrawerGarment.IDrawerCallbacks;
 
@@ -76,7 +77,7 @@ public abstract class SubsonicTabActivity extends SherlockActivity implements ID
 
     private DrawerGarment mDrawer;
     private Intent mOnDrawerClosedIntent;
-
+    private boolean isRefreshVisible;
     private String theme;
 
     private static boolean infoDialogDisplayed;
@@ -86,6 +87,7 @@ public abstract class SubsonicTabActivity extends SherlockActivity implements ID
         setUncaughtExceptionHandler();
         applyTheme();
         super.onCreate(bundle);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         startService(new Intent(this, DownloadServiceImpl.class));
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
@@ -226,6 +228,12 @@ public abstract class SubsonicTabActivity extends SherlockActivity implements ID
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.main, menu);
+        
+        MenuItem refreshItem = menu.findItem(R.id.action_refresh);
+        if (refreshItem != null) {
+        	refreshItem.setVisible(isRefreshVisible);
+        }
+        
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -421,17 +429,16 @@ public abstract class SubsonicTabActivity extends SherlockActivity implements ID
 //    }
 
     public void setProgressVisible(boolean visible) {
-        View view = findViewById(R.id.tab_progress);
-        if (view != null) {
-            view.setVisibility(visible ? View.VISIBLE : View.GONE);
-        }
+    	setSupportProgressBarIndeterminateVisibility(visible);
+    	isRefreshVisible = !visible;
+    	invalidateOptionsMenu();
+    	if (!visible) {
+        	updateProgress(null);
+    	}
     }
 
     public void updateProgress(String message) {
-        TextView view = (TextView) findViewById(R.id.tab_progress_message);
-        if (view != null) {
-            view.setText(message);
-        }
+    	getSupportActionBar().setSubtitle(message);
     }
     
     public void onDrawerOpened() {
