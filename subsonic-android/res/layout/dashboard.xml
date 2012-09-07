@@ -22,11 +22,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/dashboard.select_server" />
-                
+                
                 <Spinner
                     android:id="@+id/dashboard_server_spinner"
                     style="@style/Dashboard.Spinner"
-                    android:layout_width="fill_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical" />
                 
