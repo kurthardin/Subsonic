@@ -26,13 +26,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.MusicDirectory;
@@ -47,6 +43,10 @@ import github.daneren2005.dsub.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 public class SelectAlbumActivity extends SubsonicTabActivity {
 
@@ -63,9 +63,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     private Button unpinButton;
     private Button deleteButton;
     private Button moreButton;
-    private ImageView coverArtView;
     private boolean licenseValid;
-    private ImageButton playAllButton;
     private String mAlbumListType;
 
     /**
@@ -102,7 +100,6 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
             }
         });
 
-        coverArtView = (ImageView) findViewById(R.id.actionbar_home_icon);
         selectButton = (Button) findViewById(R.id.select_album_select);
         playNowButton = (Button) findViewById(R.id.select_album_play_now);
 		playShuffledButton = (Button) findViewById(R.id.select_album_play_shuffled);
@@ -182,26 +179,26 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
             getMusicDirectory(id, name);
         }
 
-        // Button 1: play all
-        playAllButton = (ImageButton) findViewById(R.id.action_button_1);
-        playAllButton.setImageResource(R.drawable.action_play_all);
-        playAllButton.setVisibility(View.GONE);
-        playAllButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                playAll(false);
-            }
-        });
-
-        // Button 2: refresh
-        ImageButton refreshButton = (ImageButton) findViewById(R.id.action_button_2);
-        refreshButton.setImageResource(R.drawable.action_refresh);
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                refresh();
-            }
-        });
+//        // Button 1: play all
+//        playAllButton = (ImageButton) findViewById(R.id.action_button_1);
+//        playAllButton.setImageResource(R.drawable.action_play_all);
+//        playAllButton.setVisibility(View.GONE);
+//        playAllButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                playAll(false);
+//            }
+//        });
+//
+//        // Button 2: refresh
+//        ImageButton refreshButton = (ImageButton) findViewById(R.id.action_button_2);
+//        refreshButton.setImageResource(R.drawable.action_refresh);
+//        refreshButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                refresh();
+//            }
+//        });
 		
     }
 
@@ -226,6 +223,34 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getSupportMenuInflater();
+        inflater.inflate(R.menu.select_album_options, menu);
+        
+        boolean isAlbumList = getIntent().hasExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
+        menu.findItem(R.id.action_play_all).setVisible(isAlbumList || entryList.getCount() == 0 ? false : true);
+        
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        
+	        case R.id.action_refresh:
+	        	refresh();
+	        	return true;
+	        	
+	        case R.id.action_play_all:
+	        	playAll(false);
+                return true;
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
         AdapterView.AdapterContextMenuInfo info =
@@ -234,16 +259,16 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         MusicDirectory.Entry entry = (MusicDirectory.Entry) entryList.getItemAtPosition(info.position);
 
         if (entry.isDirectory()) {
-            MenuInflater inflater = getMenuInflater();
+            android.view.MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.select_album_context, menu);
         } else {
-            MenuInflater inflater = getMenuInflater();
+            android.view.MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.select_song_context, menu);
         }
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem menuItem) {
+    public boolean onContextItemSelected(android.view.MenuItem menuItem) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
         MusicDirectory.Entry entry = (MusicDirectory.Entry) entryList.getItemAtPosition(info.position);
         List<MusicDirectory.Entry> songs = new ArrayList<MusicDirectory.Entry>(10);
@@ -556,7 +581,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
             }
 
             if (songCount > 0) {
-                getImageLoader().loadImage(coverArtView, entries.get(0), false, true);
+                getImageLoader().loadImage(getSupportActionBar(), entries.get(0));
                 entryList.addFooterView(footer);
                 selectButton.setVisibility(View.VISIBLE);
                 playNowButton.setVisibility(View.VISIBLE);
@@ -567,10 +592,8 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
 				deleteButton.setVisibility(View.VISIBLE);
             }
 
-            boolean isAlbumList = getIntent().hasExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
-
             emptyView.setVisibility(entries.isEmpty() ? View.VISIBLE : View.GONE);
-            playAllButton.setVisibility(isAlbumList || entries.isEmpty() ? View.GONE : View.VISIBLE);
+            invalidateOptionsMenu();
             entryList.setAdapter(new EntryAdapter(SelectAlbumActivity.this, getImageLoader(), entries, true));
             licenseValid = result.getSecond();
 
