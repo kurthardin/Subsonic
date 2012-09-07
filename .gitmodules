@@ -1,3 +1,6 @@
 [submodule "kurthardin/android-undergarment"]
 	path = kurthardin/android-undergarment
 	url = https://github.com/kurthardin/android-undergarment.git
+[submodule "kurthardin/ActionBarSherlock"]
+	path = kurthardin/ActionBarSherlock
+	url = https://github.com/kurthardin/ActionBarSherlock.git
