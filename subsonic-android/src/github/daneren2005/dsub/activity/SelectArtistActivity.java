@@ -22,9 +22,6 @@ package github.daneren2005.dsub.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -44,6 +41,10 @@ import github.daneren2005.dsub.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 public class SelectArtistActivity extends SubsonicTabActivity implements AdapterView.OnItemClickListener {
 
@@ -145,7 +146,7 @@ public class SelectArtistActivity extends SubsonicTabActivity implements Adapter
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+        MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.select_artist_options, menu);
         return super.onCreateOptionsMenu(menu);
     }
@@ -175,7 +176,7 @@ public class SelectArtistActivity extends SubsonicTabActivity implements Adapter
 
         if (view ==  folderButton) {
         	String musicFolderId = Util.getSelectedMusicFolderId(this);
-            MenuItem menuItem = menu.add(MENU_GROUP_MUSIC_FOLDER, -1, 0, R.string.select_artist_all_folders);
+        	android.view.MenuItem menuItem = menu.add(MENU_GROUP_MUSIC_FOLDER, -1, 0, R.string.select_artist_all_folders);
             if (musicFolderId == null) {
                 menuItem.setChecked(true);
             }
@@ -193,14 +194,14 @@ public class SelectArtistActivity extends SubsonicTabActivity implements Adapter
         	AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
 
         	if (artistList.getItemAtPosition(info.position) instanceof Artist) {
-        		MenuInflater inflater = getMenuInflater();
+        		android.view.MenuInflater inflater = getMenuInflater();
         		inflater.inflate(R.menu.select_artist_context, menu);
         	}
         }
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem menuItem) {
+    public boolean onContextItemSelected(android.view.MenuItem menuItem) {
       if (menuItem.getGroupId() == MENU_GROUP_MUSIC_FOLDER) {
     	  MusicFolder selectedFolder = menuItem.getItemId() == -1 ? null : musicFolders.get(menuItem.getItemId());
           String musicFolderId = selectedFolder == null ? null : selectedFolder.getId();

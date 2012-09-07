@@ -23,6 +23,11 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.github.eddieringle.android.libs.undergarment.widgets.DrawerGarment;
 import com.github.eddieringle.android.libs.undergarment.widgets.DrawerGarment.IDrawerCallbacks;
 
@@ -39,9 +44,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
@@ -51,8 +53,6 @@ import android.widget.BaseAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.compat.ActionBarActivity;
-import github.daneren2005.dsub.compat.ActionBarHelper;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
@@ -67,7 +67,7 @@ import github.daneren2005.dsub.util.Util;
 /**
  * @author Sindre Mehus
  */
-public abstract class SubsonicTabActivity extends ActionBarActivity implements IDrawerCallbacks {
+public abstract class SubsonicTabActivity extends SherlockActivity implements IDrawerCallbacks {
 
     private static final String TAG = SubsonicTabActivity.class.getSimpleName();
     private static ImageLoader IMAGE_LOADER;
@@ -96,11 +96,11 @@ public abstract class SubsonicTabActivity extends ActionBarActivity implements I
         
         loadSettings();
         
-        ActionBarHelper actionBar = getActionBarHelper();
+        ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         mDrawer = new DrawerGarment(this, R.layout.dashboard);
-        mDrawer.setSlideTarget(DrawerGarment.SLIDE_TARGET_CONTENT);
+        mDrawer.setSlideTarget(DrawerGarment.SLIDE_TARGET_WINDOW);
         mDrawer.setDrawerCallbacks(this);
 
         final Spinner drawerServerSpinner = (Spinner) mDrawer.findViewById(R.id.dashboard_server_spinner);
@@ -224,7 +224,7 @@ public abstract class SubsonicTabActivity extends ActionBarActivity implements I
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+        MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);
     }

@@ -40,9 +40,6 @@ import android.view.Display;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,6 +72,10 @@ import github.daneren2005.dsub.view.VisualizerView;
 
 import static github.daneren2005.dsub.domain.PlayerState.*;
 import java.util.ArrayList;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 public class DownloadActivity extends SubsonicTabActivity implements OnGestureListener {
 
@@ -487,7 +488,7 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
+		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.nowplaying, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -514,7 +515,7 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             DownloadFile downloadFile = (DownloadFile) playlistView.getItemAtPosition(info.position);
 
-            MenuInflater inflater = getMenuInflater();
+            android.view.MenuInflater inflater = getMenuInflater();
     		inflater.inflate(R.menu.nowplaying_context, menu);
 
             if (downloadFile.getSong().getParent() == null) {
@@ -528,7 +529,7 @@ public class DownloadActivity extends SubsonicTabActivity implements OnGestureLi
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem menuItem) {
+    public boolean onContextItemSelected(android.view.MenuItem menuItem) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
         DownloadFile downloadFile = (DownloadFile) playlistView.getItemAtPosition(info.position);
         return menuItemSelected(menuItem.getItemId(), downloadFile) || super.onContextItemSelected(menuItem);

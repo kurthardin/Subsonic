@@ -119,30 +119,35 @@
     <style name="Widget.Wheat.ListView" parent="android:style/Widget.ListView.White">
         <item name="android:cacheColorHint">@color/wheatBackground</item>
     </style>
-    
+    <!-- 
     <style name="Theme.Light" parent="android:Theme.Light">
         <item name="android:windowTitleSize">@dimen/actionbar_compat_height</item>
         <item name="android:windowTitleBackgroundStyle">@style/ActionBarCompat_Light</item>
         <item name="android:windowContentOverlay">@null</item>
         
-        <!-- for programmatic instantiation --> 
+        <!- for programmatic instantiation -> 
         <item name="actionbarCompatTitleStyle">@style/ActionBarCompatTitle_Light</item>
         <item name="actionbarCompatItemStyle">@style/ActionBarCompatItem_Light</item>
         <item name="actionbarCompatItemHomeStyle">@style/ActionBarCompatHomeItem_Light</item>
         <item name="actionbarCompatProgressIndicatorStyle">@style/ActionBarCompatProgressIndicator_Light</item>
     </style>
+    -->
+    <style name="Theme.Light" parent="Theme.Sherlock.Light"/>
     
+    <!--  
     <style name="Theme.Dark" parent="android:Theme">
         <item name="android:windowTitleSize">@dimen/actionbar_compat_height</item>
         <item name="android:windowTitleBackgroundStyle">@style/ActionBarCompat_Dark</item>
         <item name="android:windowContentOverlay">@null</item>
 		
-        <!-- for programmatic instantiation -->
+        <!- for programmatic instantiation ->
         <item name="actionbarCompatTitleStyle">@style/ActionBarCompatTitle_Dark</item>
         <item name="actionbarCompatItemStyle">@style/ActionBarCompatItem_Dark</item>
         <item name="actionbarCompatItemHomeStyle">@style/ActionBarCompatHomeItem_Dark</item>
         <item name="actionbarCompatProgressIndicatorStyle">@style/ActionBarCompatProgressIndicator_Dark</item>
         
     </style>
-
+	-->
+	<style name="Theme.Dark" parent="Theme.Sherlock"/>
+	    
 </resources>

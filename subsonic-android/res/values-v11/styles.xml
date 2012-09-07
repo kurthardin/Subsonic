@@ -51,6 +51,7 @@
         <item name="android:cacheColorHint">@color/wheatBackground</item>
     </style>
     
+    <!-- 
     <style name="Theme.Light" parent="android:Theme.Holo.Light">
 		<item name="android:actionBarStyle">@style/ActionBar_Light</item> 
         <item name="android:windowContentOverlay">@null</item>     
@@ -60,5 +61,6 @@
 		<item name="android:actionBarStyle">@style/ActionBar_Dark</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
-
+	-->
+	
 </resources>
