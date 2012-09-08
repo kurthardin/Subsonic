@@ -4,17 +4,6 @@
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
 
-    <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:background="@color/dividerColor"/>
-	
-    <include
-        android:id="@+id/select_artist_folder"
-        layout="@layout/select_artist_header" />
-    
-    <include layout="@layout/tab_progress"/>
-
     <ListView android:id="@+id/select_artist_list"
               android:textFilterEnabled="true"
               android:fastScrollEnabled="true"
