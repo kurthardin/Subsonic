@@ -18,18 +18,6 @@
  */
 package github.daneren2005.dsub.activity;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.ContextMenu;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ListView;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.service.DownloadFile;
@@ -44,6 +32,22 @@ import github.daneren2005.dsub.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.ContextMenu;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.WrapperListAdapter;
+
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -52,7 +56,9 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
 
     private static final String TAG = SelectAlbumActivity.class.getSimpleName();
 
-    private ListView entryList;
+    private List<MusicDirectory.Entry> entryList;
+    
+    private ListView mEntryListView;
     private View footer;
     private View emptyView;
     private Button selectButton;
@@ -64,7 +70,14 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     private Button deleteButton;
     private Button moreButton;
     private boolean licenseValid;
+    
+    private String mMusicDirectoryFetchId;
+    private String mMusicDirectoryFetchName;
+    private String mPlaylistFetchId;
+    private String mPlaylistFetchName;
     private String mAlbumListType;
+    private int mAlbumListFetchSize;
+    private int mAlbumListFetchOffset;
 
     /**
      * Called when the activity is first created.
@@ -73,15 +86,14 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_album);
-        refresh();
-    }
+        
+        entryList = new ArrayList<MusicDirectory.Entry>();
+        mEntryListView = (ListView) findViewById(R.id.select_album_entries);
 
-    protected void refresh() {
-    	entryList = (ListView) findViewById(R.id.select_album_entries);
-
-        footer = LayoutInflater.from(this).inflate(R.layout.select_album_footer, entryList, false);
-        entryList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        entryList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        footer = LayoutInflater.from(this).inflate(R.layout.select_album_footer, mEntryListView, false);
+        mEntryListView.addFooterView(footer);
+        mEntryListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        mEntryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position >= 0) {
@@ -159,62 +171,45 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
             }
         });
 
-        registerForContextMenu(entryList);
+        registerForContextMenu(mEntryListView);
+
+        mMusicDirectoryFetchId = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ID);
+        mMusicDirectoryFetchName = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_NAME);
+        mPlaylistFetchId = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID);
+        mPlaylistFetchName = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME);
+        mAlbumListType = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
+        mAlbumListFetchSize = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 0);
+        mAlbumListFetchOffset = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
+        
+    }
+
+    protected void refresh() {
+    	
 
         enableButtons();
 
-        String id = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ID);
-        String name = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_NAME);
-        String playlistId = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID);
-        String playlistName = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME);
-        mAlbumListType = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
-        int albumListSize = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 0);
-        int albumListOffset = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
-
-        if (playlistId != null) {
-            getPlaylist(playlistId, playlistName);
+        if (mPlaylistFetchId != null) {
+            getPlaylist(mPlaylistFetchId, mPlaylistFetchName);
         } else if (mAlbumListType != null) {
-            getAlbumList(mAlbumListType, albumListSize, albumListOffset);
+            getAlbumList(mAlbumListType, mAlbumListFetchSize, mAlbumListFetchOffset);
         } else {
-            getMusicDirectory(id, name);
+            getMusicDirectory(mMusicDirectoryFetchId, mMusicDirectoryFetchName);
         }
-
-//        // Button 1: play all
-//        playAllButton = (ImageButton) findViewById(R.id.action_button_1);
-//        playAllButton.setImageResource(R.drawable.action_play_all);
-//        playAllButton.setVisibility(View.GONE);
-//        playAllButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                playAll(false);
-//            }
-//        });
-//
-//        // Button 2: refresh
-//        ImageButton refreshButton = (ImageButton) findViewById(R.id.action_button_2);
-//        refreshButton.setImageResource(R.drawable.action_refresh);
-//        refreshButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                refresh();
-//            }
-//        });
 		
     }
 
     private void playAll(final boolean shuffle) {
         boolean hasSubFolders = false;
-        for (int i = 0; i < entryList.getCount(); i++) {
-            MusicDirectory.Entry entry = (MusicDirectory.Entry) entryList.getItemAtPosition(i);
+        for (int i = 0; i < mEntryListView.getCount(); i++) {
+            MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(i);
             if (entry != null && entry.isDirectory()) {
                 hasSubFolders = true;
                 break;
             }
         }
 
-        String id = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ID);
-        if (hasSubFolders && id != null) {
-            downloadRecursively(id, false, false, true, shuffle);
+        if (hasSubFolders && mMusicDirectoryFetchId != null) {
+            downloadRecursively(mMusicDirectoryFetchId, false, false, true, shuffle);
         } else {
             selectAll(true, false);
             download(false, false, true, false, shuffle);
@@ -227,8 +222,8 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.select_album_options, menu);
         
-        boolean isAlbumList = getIntent().hasExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
-        menu.findItem(R.id.action_play_all).setVisible(isAlbumList || entryList.getCount() == 0 ? false : true);
+        boolean isAlbumList = mAlbumListType != null;//getIntent().hasExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
+        menu.findItem(R.id.action_play_all).setVisible(isAlbumList || mEntryListView.getCount() == 0 ? false : true);
         
         return super.onCreateOptionsMenu(menu);
     }
@@ -256,7 +251,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         AdapterView.AdapterContextMenuInfo info =
                 (AdapterView.AdapterContextMenuInfo) menuInfo;
 
-        MusicDirectory.Entry entry = (MusicDirectory.Entry) entryList.getItemAtPosition(info.position);
+        MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position);
 
         if (entry.isDirectory()) {
             android.view.MenuInflater inflater = getMenuInflater();
@@ -270,9 +265,9 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     @Override
     public boolean onContextItemSelected(android.view.MenuItem menuItem) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-        MusicDirectory.Entry entry = (MusicDirectory.Entry) entryList.getItemAtPosition(info.position);
+        MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position);
         List<MusicDirectory.Entry> songs = new ArrayList<MusicDirectory.Entry>(10);
-        songs.add((MusicDirectory.Entry) entryList.getItemAtPosition(info.position));
+        songs.add((MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position));
         switch (menuItem.getItemId()) {
             case R.id.album_menu_play_now:
                 downloadRecursively(entry.getId(), false, false, true, false);
@@ -328,44 +323,37 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         }.execute();
     }
 
-    private void getAlbumList(final String albumListType, final int size, final int offset) {
+    private void getAlbumList(final String albumListFetchType, final int albumListFetchSize, final int albumListFetchOffset) {
 
-        if ("newest".equals(albumListType)) {
+        if ("newest".equals(albumListFetchType)) {
             setTitle(R.string.main_albums_newest);
-        } else if ("random".equals(albumListType)) {
+        } else if ("random".equals(albumListFetchType)) {
             setTitle(R.string.main_albums_random);
-        } else if ("highest".equals(albumListType)) {
+        } else if ("highest".equals(albumListFetchType)) {
             setTitle(R.string.main_albums_highest);
-        } else if ("recent".equals(albumListType)) {
+        } else if ("recent".equals(albumListFetchType)) {
             setTitle(R.string.main_albums_recent);
-        } else if ("frequent".equals(albumListType)) {
+        } else if ("frequent".equals(albumListFetchType)) {
             setTitle(R.string.main_albums_frequent);
         }
 
         new LoadTask() {
             @Override
             protected MusicDirectory load(MusicService service) throws Exception {
-                return service.getAlbumList(albumListType, size, offset, SelectAlbumActivity.this, this);
+                return service.getAlbumList(albumListFetchType, albumListFetchSize, albumListFetchOffset, SelectAlbumActivity.this, this);
             }
 
             @Override
             protected void done(Pair<MusicDirectory, Boolean> result) {
                 if (!result.getFirst().getChildren().isEmpty()) {
                     moreButton.setVisibility(View.VISIBLE);
-                    entryList.addFooterView(footer);
 
                     moreButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Intent intent = new Intent(SelectAlbumActivity.this, SelectAlbumActivity.class);
-                            String type = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
-                            int size = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 0);
-                            int offset = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0) + size;
-
-                            intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, type);
-                            intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, size);
-                            intent.putExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, offset);
-                            startActivity(intent);
+                        	mAlbumListFetchOffset = entryList.size();
+                        	mAlbumListFetchSize = mAlbumListFetchOffset;
+                            refresh();
                         }
                     });
                 }
@@ -376,9 +364,9 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
 
     private void selectAllOrNone() {
         boolean someUnselected = false;
-        int count = entryList.getCount();
+        int count = mEntryListView.getCount();
         for (int i = 0; i < count; i++) {
-            if (!entryList.isItemChecked(i) && entryList.getItemAtPosition(i) instanceof MusicDirectory.Entry) {
+            if (!mEntryListView.isItemChecked(i) && mEntryListView.getItemAtPosition(i) instanceof MusicDirectory.Entry) {
                 someUnselected = true;
                 break;
             }
@@ -387,12 +375,12 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     }
 
     private void selectAll(boolean selected, boolean toast) {
-        int count = entryList.getCount();
+        int count = mEntryListView.getCount();
         int selectedCount = 0;
         for (int i = 0; i < count; i++) {
-            MusicDirectory.Entry entry = (MusicDirectory.Entry) entryList.getItemAtPosition(i);
+            MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(i);
             if (entry != null && !entry.isDirectory() && !entry.isVideo()) {
-                entryList.setItemChecked(i, selected);
+                mEntryListView.setItemChecked(i, selected);
                 selectedCount++;
             }
         }
@@ -437,10 +425,10 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
 
     private List<MusicDirectory.Entry> getSelectedSongs() {
         List<MusicDirectory.Entry> songs = new ArrayList<MusicDirectory.Entry>(10);
-        int count = entryList.getCount();
+        int count = mEntryListView.getCount();
         for (int i = 0; i < count; i++) {
-            if (entryList.isItemChecked(i)) {
-                songs.add((MusicDirectory.Entry) entryList.getItemAtPosition(i));
+            if (mEntryListView.isItemChecked(i)) {
+                songs.add((MusicDirectory.Entry) mEntryListView.getItemAtPosition(i));
             }
         }
         return songs;
@@ -461,9 +449,8 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
 
                 warnIfNetworkOrStorageUnavailable();
                 getDownloadService().download(songs, save, autoplay, playNext, shuffle);
-                String playlistName = getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME);
-                if (playlistName != null) {
-                    getDownloadService().setSuggestedPlaylistName(playlistName);
+                if (mPlaylistFetchName != null) {
+                    getDownloadService().setSuggestedPlaylistName(mPlaylistFetchName);
                 }
                 if (autoplay) {
                     showTabActivity(DownloadActivity.class);
@@ -572,17 +559,17 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         @Override
         protected void done(Pair<MusicDirectory, Boolean> result) {
             List<MusicDirectory.Entry> entries = result.getFirst().getChildren();
-
+            entryList.addAll(entries);
             int songCount = 0;
-            for (MusicDirectory.Entry entry : entries) {
+            for (MusicDirectory.Entry entry : entryList) {
                 if (!entry.isDirectory()) {
                     songCount++;
                 }
             }
 
             if (songCount > 0) {
-                getImageLoader().loadImage(getSupportActionBar(), entries.get(0));
-                entryList.addFooterView(footer);
+                getImageLoader().loadImage(getSupportActionBar(), entryList.get(0));
+                mEntryListView.addFooterView(footer);
                 selectButton.setVisibility(View.VISIBLE);
                 playNowButton.setVisibility(View.VISIBLE);
 				playShuffledButton.setVisibility(View.VISIBLE);
@@ -592,9 +579,37 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
 				deleteButton.setVisibility(View.VISIBLE);
             }
 
-            emptyView.setVisibility(entries.isEmpty() ? View.VISIBLE : View.GONE);
+            emptyView.setVisibility(entryList.isEmpty() ? View.VISIBLE : View.GONE);
             invalidateOptionsMenu();
-            entryList.setAdapter(new EntryAdapter(SelectAlbumActivity.this, getImageLoader(), entries, true));
+            
+            if (mEntryListView.getAdapter() == null) {
+            	mEntryListView.setAdapter(new EntryAdapter(SelectAlbumActivity.this, getImageLoader(), entries, true));
+            } else {
+            	ListAdapter listAdapter = mEntryListView.getAdapter();
+            	final EntryAdapter entryListAdapter;
+            	if (listAdapter instanceof WrapperListAdapter) {
+            		entryListAdapter = (EntryAdapter) ((WrapperListAdapter) listAdapter).getWrappedAdapter();
+            	} else if(listAdapter instanceof EntryAdapter) {
+            		entryListAdapter = (EntryAdapter) listAdapter;
+            	} else {
+            		entryListAdapter = null;
+            	}
+            	
+            	if (entryListAdapter != null) {
+            		if (mAlbumListFetchOffset == 0) {
+            			entryListAdapter.clear();
+            		}
+            		for (MusicDirectory.Entry entry : entries) {
+            			entryListAdapter.add(entry);
+            		}
+            		runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							entryListAdapter.notifyDataSetChanged();
+						}
+					});
+            	}
+            }
             licenseValid = result.getSecond();
 
             boolean playAll = getIntent().getBooleanExtra(Constants.INTENT_EXTRA_NAME_AUTOPLAY, false);
