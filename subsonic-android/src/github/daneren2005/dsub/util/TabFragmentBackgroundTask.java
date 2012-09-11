@@ -1,23 +1,24 @@
 package github.daneren2005.dsub.util;
 
-import github.daneren2005.dsub.activity.SubsonicActivity;
+import github.daneren2005.dsub.activity.MainActivity;
+import github.daneren2005.dsub.fragment.SubsonicTabFragment;
 
 /**
  * @author Sindre Mehus
  * @version $Id$
  */
-public abstract class TabActivityBackgroundTask<T> extends BackgroundTask<T> {
+public abstract class TabFragmentBackgroundTask<T> extends BackgroundTask<T> {
 
-    private final SubsonicActivity tabActivity;
+    private final SubsonicTabFragment tabFragment;
 
-    public TabActivityBackgroundTask(SubsonicActivity activity) {
-        super(activity);
-        tabActivity = activity;
+    public TabFragmentBackgroundTask(SubsonicTabFragment fragment) {
+        super(fragment.getActivity());
+        tabFragment = fragment;
     }
 
     @Override
     public void execute() {
-        tabActivity.setProgressVisible(true);
+        tabFragment.setProgressVisible(true);
 
         new Thread() {
             @Override
@@ -31,7 +32,7 @@ public abstract class TabActivityBackgroundTask<T> extends BackgroundTask<T> {
                     getHandler().post(new Runnable() {
                         @Override
                         public void run() {
-                            tabActivity.setProgressVisible(false);
+                            tabFragment.setProgressVisible(false);
                             done(result);
                         }
                     });
@@ -42,7 +43,7 @@ public abstract class TabActivityBackgroundTask<T> extends BackgroundTask<T> {
                     getHandler().post(new Runnable() {
                         @Override
                         public void run() {
-                            tabActivity.setProgressVisible(false);
+                            tabFragment.setProgressVisible(false);
                             error(t);
                         }
                     });
@@ -52,7 +53,7 @@ public abstract class TabActivityBackgroundTask<T> extends BackgroundTask<T> {
     }
 
     private boolean isCancelled() {
-        return tabActivity.isDestroyed();
+        return ((MainActivity) tabFragment.getActivity()).isDestroyed();
     }
 
     @Override
@@ -60,7 +61,7 @@ public abstract class TabActivityBackgroundTask<T> extends BackgroundTask<T> {
         getHandler().post(new Runnable() {
             @Override
             public void run() {
-                tabActivity.updateProgress(message);
+                tabFragment.updateProgress(message);
             }
         });
     }

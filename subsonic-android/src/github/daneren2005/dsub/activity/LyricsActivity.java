@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.Lyrics;
+import github.daneren2005.dsub.interfaces.Refreshable;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
 import github.daneren2005.dsub.util.BackgroundTask;
@@ -34,7 +35,7 @@ import github.daneren2005.dsub.util.TabActivityBackgroundTask;
  *
  * @author Sindre Mehus
  */
-public final class LyricsActivity extends SubsonicTabActivity {
+public final class LyricsActivity extends SubsonicActivity implements Refreshable {
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -43,7 +44,7 @@ public final class LyricsActivity extends SubsonicTabActivity {
         refresh();
     }
 
-    protected void refresh() {
+    public void refresh() {
         BackgroundTask<Lyrics> task = new TabActivityBackgroundTask<Lyrics>(this) {
             @Override
             protected Lyrics doInBackground() throws Throwable {

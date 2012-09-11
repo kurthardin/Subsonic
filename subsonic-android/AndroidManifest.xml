@@ -20,15 +20,18 @@
 
     <application android:label="@string/common.appname" android:icon="@drawable/launch2" android:theme="@style/Theme.Sherlock">
         
-        <activity android:name="github.daneren2005.dsub.activity.SelectArtistActivity"
+        <activity android:name="github.daneren2005.dsub.activity.MainActivity"
                   android:label="DSub"
                   android:configChanges="orientation|keyboardHidden"
-                  android:launchMode="standard">
+                  android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter> 
         </activity>
+        
+        <activity android:name="github.daneren2005.dsub.activity.SelectArtistActivity"
+                  android:configChanges="orientation|keyboardHidden" />
 
         <activity android:name="github.daneren2005.dsub.activity.SelectAlbumActivity"
                   android:configChanges="orientation|keyboardHidden"/>

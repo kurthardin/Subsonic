@@ -19,14 +19,11 @@
 
 package github.daneren2005.dsub.activity;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.util.Util;
 
@@ -35,16 +32,14 @@ import github.daneren2005.dsub.util.Util;
  *
  * @author Sindre Mehus
  */
-public final class HelpActivity extends Activity {
+public final class HelpActivity extends SubsonicActivity {
 
     private WebView webView;
-    private Button backButton;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.help);
 
         webView = (WebView) findViewById(R.id.help_contents);
@@ -55,22 +50,6 @@ public final class HelpActivity extends Activity {
         } else {
             webView.loadUrl(getResources().getString(R.string.help_url));
         }
-
-        backButton = (Button) findViewById(R.id.help_back);
-        backButton.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                webView.goBack();
-            }
-        });
-
-        Button doneButton = (Button) findViewById(R.id.help_close);
-        doneButton.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
     }
 
     @Override
@@ -106,7 +85,6 @@ public final class HelpActivity extends Activity {
         public void onPageFinished(WebView view, String url) {
             setProgressBarIndeterminateVisibility(false);
             setTitle(view.getTitle());
-            backButton.setEnabled(view.canGoBack());
         }
 
         @Override

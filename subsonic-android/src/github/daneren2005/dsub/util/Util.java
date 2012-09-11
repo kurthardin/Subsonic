@@ -56,6 +56,7 @@ import github.daneren2005.dsub.domain.RepeatMode;
 import github.daneren2005.dsub.domain.Version;
 import github.daneren2005.dsub.provider.DSubWidgetProvider;
 import github.daneren2005.dsub.receiver.MediaButtonIntentReceiver;
+import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
 import org.apache.http.HttpEntity;
 
@@ -659,6 +660,20 @@ public final class Util {
 
         // Update widget
         DSubWidgetProvider.getInstance().notifyChange(context, downloadService, false);
+    }
+    
+    public static DownloadService getDownloadService(Context context) {
+        // If service is not available, request it to start and wait for it.
+        for (int i = 0; i < 5; i++) {
+            DownloadService downloadService = DownloadServiceImpl.getInstance();
+            if (downloadService != null) {
+                return downloadService;
+            }
+            Log.w(TAG, "DownloadService not running. Attempting to start it.");
+            context.startService(new Intent(context, DownloadServiceImpl.class));
+            Util.sleepQuietly(50L);
+        }
+        return DownloadServiceImpl.getInstance();
     }
 
     public static void sleepQuietly(long millis) {

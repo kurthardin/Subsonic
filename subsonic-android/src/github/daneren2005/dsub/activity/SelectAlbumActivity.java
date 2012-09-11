@@ -20,11 +20,13 @@ package github.daneren2005.dsub.activity;
 
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.MusicDirectory;
+import github.daneren2005.dsub.interfaces.Refreshable;
 import github.daneren2005.dsub.service.DownloadFile;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
 import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.EntryAdapter;
+import github.daneren2005.dsub.util.MainOptionsMenuHelper;
 import github.daneren2005.dsub.util.Pair;
 import github.daneren2005.dsub.util.TabActivityBackgroundTask;
 import github.daneren2005.dsub.util.Util;
@@ -42,7 +44,6 @@ import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -52,7 +53,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class SelectAlbumActivity extends SubsonicTabActivity {
+public class SelectAlbumActivity extends SubsonicActivity implements Refreshable {
 
     private static final String TAG = SelectAlbumActivity.class.getSimpleName();
 
@@ -88,7 +89,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         setContentView(R.layout.select_album);
         
         entryList = new ArrayList<MusicDirectory.Entry>();
-        mEntryListView = (ListView) findViewById(R.id.select_album_entries);
+        mEntryListView = (ListView) findViewById(android.R.id.list);
 
         footer = LayoutInflater.from(this).inflate(R.layout.select_album_footer, mEntryListView, false);
         mEntryListView.addFooterView(footer);
@@ -102,7 +103,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
                         Intent intent = new Intent(SelectAlbumActivity.this, SelectAlbumActivity.class);
                         intent.putExtra(Constants.INTENT_EXTRA_NAME_ID, entry.getId());
                         intent.putExtra(Constants.INTENT_EXTRA_NAME_NAME, entry.getTitle());
-                        startActivity(intent);
+                        Util.startActivityWithoutTransition(SelectAlbumActivity.this, intent);
                     } else if (entry.isVideo()) {
                         playVideo(entry);
                     } else {
@@ -120,7 +121,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         unpinButton = (Button) findViewById(R.id.select_album_unpin);
         deleteButton = (Button) findViewById(R.id.select_album_delete);
         moreButton = (Button) footer.findViewById(R.id.select_album_more);
-        emptyView = findViewById(R.id.select_album_empty);
+        emptyView = findViewById(android.R.id.empty);
 
         selectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,10 +182,11 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         mAlbumListFetchSize = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 0);
         mAlbumListFetchOffset = getIntent().getIntExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
         
+        refresh();
+        
     }
 
-    protected void refresh() {
-    	
+    public void refresh() {
 
         enableButtons();
 
@@ -248,52 +250,60 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
-        AdapterView.AdapterContextMenuInfo info =
-                (AdapterView.AdapterContextMenuInfo) menuInfo;
+        
+        if(menuInfo != null){
+        	AdapterView.AdapterContextMenuInfo info =
+        			(AdapterView.AdapterContextMenuInfo) menuInfo;
 
-        MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position);
+        	MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position);
 
-        if (entry.isDirectory()) {
-            android.view.MenuInflater inflater = getMenuInflater();
-            inflater.inflate(R.menu.select_album_context, menu);
-        } else {
-            android.view.MenuInflater inflater = getMenuInflater();
-            inflater.inflate(R.menu.select_song_context, menu);
+        	if (entry.isDirectory()) {
+        		android.view.MenuInflater inflater = getMenuInflater();
+        		inflater.inflate(R.menu.select_album_context, menu);
+        	} else {
+        		android.view.MenuInflater inflater = getMenuInflater();
+        		inflater.inflate(R.menu.select_song_context, menu);
+        	}
         }
     }
 
     @Override
     public boolean onContextItemSelected(android.view.MenuItem menuItem) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-        MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position);
-        List<MusicDirectory.Entry> songs = new ArrayList<MusicDirectory.Entry>(10);
-        songs.add((MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position));
-        switch (menuItem.getItemId()) {
-            case R.id.album_menu_play_now:
-                downloadRecursively(entry.getId(), false, false, true, false);
-                break;
-			case R.id.album_menu_play_shuffled:
-                downloadRecursively(entry.getId(), false, false, true, true);
-                break;
-            case R.id.album_menu_play_last:
-                downloadRecursively(entry.getId(), false, true, false, false);
-                break;
-            case R.id.album_menu_pin:
-                downloadRecursively(entry.getId(), true, true, false, false);
-                break;
-            case R.id.song_menu_play_now:
-                getDownloadService().download(songs, false, true, true, false);
-                break;
-            case R.id.song_menu_play_next:
-                getDownloadService().download(songs, false, false, true, false);
-                break;
-            case R.id.song_menu_play_last:
-                getDownloadService().download(songs, false, false, false, false);
-                break;
-            default:
-                return super.onContextItemSelected(menuItem);
+        if (menuItem.getGroupId() == R.id.select_album_context_menu ||
+        		menuItem.getGroupId() == R.id.select_song_context_menu) {
+        	AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+        	MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position);
+        	List<MusicDirectory.Entry> songs = new ArrayList<MusicDirectory.Entry>(10);
+        	songs.add((MusicDirectory.Entry) mEntryListView.getItemAtPosition(info.position));
+        	switch (menuItem.getItemId()) {
+        		case R.id.album_menu_play_now:
+        			downloadRecursively(entry.getId(), false, false, true, false);
+        			break;
+        		case R.id.album_menu_play_shuffled:
+        			downloadRecursively(entry.getId(), false, false, true, true);
+        			break;
+        		case R.id.album_menu_play_last:
+        			downloadRecursively(entry.getId(), false, true, false, false);
+        			break;
+        		case R.id.album_menu_pin:
+        			downloadRecursively(entry.getId(), true, true, false, false);
+        			break;
+        		case R.id.song_menu_play_now:
+        			Util.getDownloadService(this).download(songs, false, true, true, false);
+        			break;
+        		case R.id.song_menu_play_next:
+        			Util.getDownloadService(this).download(songs, false, false, true, false);
+        			break;
+        		case R.id.song_menu_play_last:
+        			Util.getDownloadService(this).download(songs, false, false, false, false);
+        			break;
+        		default:
+        			return false;
+        	}
+        	return true;
+        } else {
+        	return super.onContextItemSelected(menuItem);
         }
-        return true;
     }
     
     public String getAlbumListType() {
@@ -396,7 +406,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     }
 
     private void enableButtons() {
-        if (getDownloadService() == null) {
+        if (Util.getDownloadService(this) == null) {
             return;
         }
 
@@ -406,7 +416,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
         boolean deleteEnabled = false;
 
         for (MusicDirectory.Entry song : selection) {
-            DownloadFile downloadFile = getDownloadService().forSong(song);
+            DownloadFile downloadFile = Util.getDownloadService(this).forSong(song);
             if (downloadFile.isCompleteFileAvailable()) {
                 deleteEnabled = true;
             }
@@ -435,7 +445,7 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     }
 
     private void download(final boolean append, final boolean save, final boolean autoplay, final boolean playNext, final boolean shuffle) {
-        if (getDownloadService() == null) {
+        if (Util.getDownloadService(this) == null) {
             return;
         }
 
@@ -444,16 +454,16 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
             @Override
             public void run() {
                 if (!append) {
-                    getDownloadService().clear();
+                    Util.getDownloadService(SelectAlbumActivity.this).clear();
                 }
 
                 warnIfNetworkOrStorageUnavailable();
-                getDownloadService().download(songs, save, autoplay, playNext, shuffle);
+                Util.getDownloadService(SelectAlbumActivity.this).download(songs, save, autoplay, playNext, shuffle);
                 if (mPlaylistFetchName != null) {
-                    getDownloadService().setSuggestedPlaylistName(mPlaylistFetchName);
+                    Util.getDownloadService(SelectAlbumActivity.this).setSuggestedPlaylistName(mPlaylistFetchName);
                 }
                 if (autoplay) {
-                    showTabActivity(DownloadActivity.class);
+//                    showTabActivity(DownloadActivity.class); // TODO Show 'now playing'
                 } else if (save) {
                     Util.toast(SelectAlbumActivity.this,
                                getResources().getQuantityString(R.plurals.select_album_n_songs_downloading, songs.size(), songs.size()));
@@ -468,22 +478,21 @@ public class SelectAlbumActivity extends SubsonicTabActivity {
     }
 
     private void delete() {
-        if (getDownloadService() != null) {
-            getDownloadService().delete(getSelectedSongs());
+        if (Util.getDownloadService(this) != null) {
+            Util.getDownloadService(this).delete(getSelectedSongs());
         }
     }
 
     private void unpin() {
-        if (getDownloadService() != null) {
-            getDownloadService().unpin(getSelectedSongs());
+        if (Util.getDownloadService(this) != null) {
+            Util.getDownloadService(this).unpin(getSelectedSongs());
         }
     }
 
     private void playVideo(MusicDirectory.Entry entry) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(MusicServiceFactory.getMusicService(this).getVideoUrl(this, entry.getId())));
-
-        startActivity(intent);
+        Util.startActivityWithoutTransition(this, intent);
     }
 
     private void checkLicenseAndTrialPeriod(Runnable onValid) {

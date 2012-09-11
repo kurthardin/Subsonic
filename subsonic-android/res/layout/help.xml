@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
-
+                
+<!-- Unnecessary buttons
     <LinearLayout android:id="@+id/help_buttons"
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
@@ -28,15 +29,15 @@
                 android:paddingLeft="25dip"
                 android:paddingRight="25dip"/>
     </LinearLayout>
-
+-->
 
     <WebView
             android:id="@+id/help_contents"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_above="@id/help_buttons"
             android:layout_weight="1"
             android:fadingEdge="vertical"
-            android:fadingEdgeLength="12dip"/>
+            android:fadingEdgeLength="12dip"/> <!-- Previously contained: 
+            												android:layout_above="@id/help_buttons" -->
 
   </RelativeLayout>

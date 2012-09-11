@@ -5,12 +5,16 @@
             android:id="@+id/action_refresh"
             android:icon="@drawable/action_refresh"
             android:title="@string/action.refresh"
-            android:showAsAction="always"/>
+            android:showAsAction="always"
+            android:menuCategory="container" 
+            android:orderInCategory="0"/>
 
     <item 
             android:id="@+id/action_play_all"
             android:icon="@drawable/action_play_all"
             android:title="@string/action.play_all"
-            android:showAsAction="always"/>
+            android:showAsAction="always"
+            android:menuCategory="container" 
+            android:orderInCategory="1"/>
 
 </menu>

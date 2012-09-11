@@ -23,7 +23,6 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.provider.SearchRecentSuggestions;
 import android.util.Log;
@@ -44,7 +43,11 @@ import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SettingsActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockPreferenceActivity;
+import com.actionbarsherlock.view.MenuItem;
+
+public class SettingsActivity extends SherlockPreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = SettingsActivity.class.getSimpleName();
     private final Map<String, ServerSettings> serverSettings = new LinkedHashMap<String, ServerSettings>();
@@ -61,6 +64,10 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        
         addPreferencesFromResource(R.xml.settings);
 
         theme = (ListPreference) findPreference(Constants.PREFERENCES_KEY_THEME);
@@ -139,6 +146,24 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         else if (Constants.PREFERENCES_KEY_CACHE_LOCATION.equals(key)) {
             setCacheLocation(sharedPreferences.getString(key, ""));
         }
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	switch (item.getItemId()) {
+	    	case android.R.id.home:
+	        	finish();
+	        	return true;
+	
+	    	default:
+	    		return false;
+		}
+    }
+    
+    @Override
+    public void finish() {
+    	super.finish();
+    	Util.disablePendingTransition(this);
     }
 
     private void update() {

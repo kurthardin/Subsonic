@@ -17,42 +17,49 @@
  Copyright 2009 (C) Sindre Mehus
  */
 
-package github.daneren2005.dsub.activity;
+package github.daneren2005.dsub.fragment;
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import github.daneren2005.dsub.R;
+import github.daneren2005.dsub.activity.MainActivity;
+import github.daneren2005.dsub.activity.SelectAlbumActivity;
 import github.daneren2005.dsub.domain.Artist;
 import github.daneren2005.dsub.domain.Indexes;
 import github.daneren2005.dsub.domain.MusicFolder;
-import github.daneren2005.dsub.interfaces.Refreshable;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
 import github.daneren2005.dsub.util.ArtistAdapter;
 import github.daneren2005.dsub.util.BackgroundTask;
 import github.daneren2005.dsub.util.Constants;
-import github.daneren2005.dsub.util.TabActivityBackgroundTask;
+import github.daneren2005.dsub.util.TabFragmentBackgroundTask;
 import github.daneren2005.dsub.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
 import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class SelectArtistActivity extends SubsonicActivity 
-implements AdapterView.OnItemClickListener, ActionBar.OnNavigationListener, Refreshable {
+public class SelectArtistFragment extends SubsonicTabFragment 
+implements ActionBar.OnNavigationListener {
 
-    private ListView artistList;
+//    private ListView artistList;
     private List<MusicFolder> musicFolders;
+    
+    private boolean mShouldRefresh;
 
     /**
      * Called when the activity is first created.
@@ -60,32 +67,49 @@ implements AdapterView.OnItemClickListener, ActionBar.OnNavigationListener, Refr
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.select_artist);
-        
-        artistList = (ListView) findViewById(android.R.id.list);
-        artistList.setOnItemClickListener(this);
-        
+        setHasOptionsMenu(true);
+    }
+    
+    @Override
+    public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.select_artist, container, false);
+    }
+    
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+//    	artistList = (ListView) view.findViewById(R.id.select_artist_list);
+//    	artistList.setOnItemClickListener(this);
+    	registerForContextMenu(getListView());
+    	super.onActivityCreated(savedInstanceState);
+    }
+    
+    @Override
+    protected void doSelect() {
         musicFolders = null;
         loadMusicFolders();
-        
-        registerForContextMenu(artistList);
-        
-        refresh();
     }
 
     public void refresh() {
-        setTitle(Util.isOffline(this) ? R.string.music_library_label_offline : R.string.music_library_label);
+    	if (Util.isOffline(getActivity())) {
+    		getActivity().setTitle(R.string.music_library_label_offline);
+    	} else {
+    		getActivity().setTitle(null);
+    	}
     	loadArtists(true);
+    }
+    
+    public void shouldRefresh(boolean refresh) {
+    	mShouldRefresh = refresh;
     }
 
     private void loadMusicFolders() {
-        BackgroundTask<List<MusicFolder>> task = new TabActivityBackgroundTask<List<MusicFolder>>(this) {
+        BackgroundTask<List<MusicFolder>> task = new TabFragmentBackgroundTask<List<MusicFolder>>(SelectArtistFragment.this) {
             @Override
             protected List<MusicFolder> doInBackground() throws Throwable {
-                boolean refresh = getIntent().getBooleanExtra(Constants.INTENT_EXTRA_NAME_REFRESH, false);
-                MusicService musicService = MusicServiceFactory.getMusicService(SelectArtistActivity.this);
-                if (!Util.isOffline(SelectArtistActivity.this)) {
-                    return musicService.getMusicFolders(refresh, SelectArtistActivity.this, this);
+//                boolean refresh = getIntent().getBooleanExtra(Constants.INTENT_EXTRA_NAME_REFRESH, false);
+                MusicService musicService = MusicServiceFactory.getMusicService(getActivity());
+                if (!Util.isOffline(getActivity())) {
+                    return musicService.getMusicFolders(mShouldRefresh, getActivity(), this);
                 } else {
                 	return null;
                 }
@@ -95,7 +119,8 @@ implements AdapterView.OnItemClickListener, ActionBar.OnNavigationListener, Refr
             protected void done(List<MusicFolder> result) {
             	musicFolders = result;
             	if (musicFolders != null) {
-            		Context context = getSupportActionBar().getThemedContext();
+            		SherlockFragmentActivity activity = (SherlockFragmentActivity) getActivity();
+            		Context context = activity.getSupportActionBar().getThemedContext();
             		List<CharSequence> musicFolderNames = new ArrayList<CharSequence>(musicFolders.size() + 1);
             		musicFolderNames.add(getString(R.string.select_artist_all_folders));
             		for (MusicFolder folder: musicFolders) {
@@ -104,12 +129,12 @@ implements AdapterView.OnItemClickListener, ActionBar.OnNavigationListener, Refr
                     ArrayAdapter<CharSequence> list = new ArrayAdapter<CharSequence>(context, R.layout.sherlock_spinner_item, musicFolderNames);
                     list.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 
-                    getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-                    getSupportActionBar().setListNavigationCallbacks(list, SelectArtistActivity.this);
+                    activity.getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+                    activity.getSupportActionBar().setListNavigationCallbacks(list, SelectArtistFragment.this);
 
-                    String musicFolderId = Util.getSelectedMusicFolderId(SelectArtistActivity.this);
+                    String musicFolderId = Util.getSelectedMusicFolderId(activity);
                     int dropDownId = musicFolderId == null ? 0 : Integer.valueOf(musicFolderId) + 1;
-                    getSupportActionBar().setSelectedNavigationItem(dropDownId);
+                    activity.getSupportActionBar().setSelectedNavigationItem(dropDownId);
             	}
                 
             }
@@ -118,20 +143,21 @@ implements AdapterView.OnItemClickListener, ActionBar.OnNavigationListener, Refr
     }
     
     private void loadArtists(final boolean refresh) {
-        BackgroundTask<Indexes> task = new TabActivityBackgroundTask<Indexes>(this) {
+        BackgroundTask<Indexes> task = new TabFragmentBackgroundTask<Indexes>(SelectArtistFragment.this) {
             @Override
             protected Indexes doInBackground() throws Throwable {
-                MusicService musicService = MusicServiceFactory.getMusicService(SelectArtistActivity.this);
-                String musicFolderId = Util.getSelectedMusicFolderId(SelectArtistActivity.this);
-                return musicService.getIndexes(musicFolderId, refresh, SelectArtistActivity.this, this);
+                MusicService musicService = MusicServiceFactory.getMusicService(getActivity());
+                String musicFolderId = Util.getSelectedMusicFolderId(getActivity());
+                return musicService.getIndexes(musicFolderId, refresh, getActivity(), this);
             }
 
             @Override
             protected void done(Indexes result) {
+                updateProgress(getString(R.string.select_artist_empty));
                 List<Artist> artists = new ArrayList<Artist>(result.getShortcuts().size() + result.getArtists().size());
                 artists.addAll(result.getShortcuts());
                 artists.addAll(result.getArtists());
-                artistList.setAdapter(new ArtistAdapter(SelectArtistActivity.this, artists));
+                setListAdapter(new ArtistAdapter(getActivity(), artists));
             }
         };
         task.execute();
@@ -141,76 +167,76 @@ implements AdapterView.OnItemClickListener, ActionBar.OnNavigationListener, Refr
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
     	MusicFolder selectedFolder = itemId == 0 ? null : musicFolders.get((int) itemId - 1);
         String musicFolderId = selectedFolder == null ? null : selectedFolder.getId();
-        Util.setSelectedMusicFolderId(this, musicFolderId);
+        Util.setSelectedMusicFolderId(getActivity(), musicFolderId);
         refresh();
         return true;
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    	Artist artist = (Artist) parent.getItemAtPosition(position);
-    	Intent intent = new Intent(this, SelectAlbumActivity.class);
+    public void onListItemClick(ListView list, View view, int position, long id) {
+    	Artist artist = (Artist) list.getItemAtPosition(position);
+    	Intent intent = new Intent(getActivity(), SelectAlbumActivity.class);
     	intent.putExtra(Constants.INTENT_EXTRA_NAME_ID, artist.getId());
     	intent.putExtra(Constants.INTENT_EXTRA_NAME_NAME, artist.getName());
     	startActivity(intent);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getSupportMenuInflater();
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.select_artist_options, menu);
-        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-        
 	        case R.id.action_refresh:
 	        	refresh();
 	        	return true;
 	        	
 	        case R.id.action_shuffle:
-	        	Intent intent = new Intent(SelectArtistActivity.this, DownloadActivity.class);
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
-//                showTabActivity(DownloadActivity.class, intent); // TODO: Show 'now playing'
+// TODO: Play shuffled and show 'now playing'
+//	        	Intent intent = new Intent(getActivity(), DownloadActivity.class);
+//                intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
+//                showTabActivity(DownloadActivity.class, intent);
                 return true;
-
-        }
-
-        return super.onOptionsItemSelected(item);
+                
+            default:
+            	return super.onOptionsItemSelected(item);
+        } 
     }
-
+ 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+        	AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
 
-        if (info != null && artistList.getItemAtPosition(info.position) instanceof Artist) {
-        	android.view.MenuInflater inflater = getMenuInflater();
-        	inflater.inflate(R.menu.select_artist_context, menu);
-        }
+        	if (getListView().getItemAtPosition(info.position) instanceof Artist) {
+        		android.view.MenuInflater inflater = getActivity().getMenuInflater();
+        		inflater.inflate(R.menu.select_artist_context, menu);
+        	}
     }
 
     @Override
     public boolean onContextItemSelected(android.view.MenuItem menuItem) {
-    	if (menuItem.getGroupId() == R.id.select_artist_context_menu) {
+    	if (menuItem.getGroupId() == R.id.select_artist_context_menu) {  
     		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-    		Artist artist = (Artist) artistList.getItemAtPosition(info.position);
+
+    		Artist artist = (Artist) getListView().getItemAtPosition(info.position);
 
     		if (artist != null) {
+    			MainActivity activity = getMainActivity();
     			switch (menuItem.getItemId()) {
     			case R.id.artist_menu_play_now:
-    				downloadRecursively(artist.getId(), false, false, true, false);
+    				activity.downloadRecursively(artist.getId(), false, false, true, false);
     				break;
     			case R.id.artist_menu_play_shuffled:
-    				downloadRecursively(artist.getId(), false, false, true, true);
+    				activity.downloadRecursively(artist.getId(), false, false, true, true);
     				break;
     			case R.id.artist_menu_play_last:
-    				downloadRecursively(artist.getId(), false, true, false, false);
+    				activity.downloadRecursively(artist.getId(), false, true, false, false);
     				break;
     			case R.id.artist_menu_pin:
-    				downloadRecursively(artist.getId(), true, true, false, false);
+    				activity.downloadRecursively(artist.getId(), true, true, false, false);
     				break;
     			default:
     				return super.onContextItemSelected(menuItem);

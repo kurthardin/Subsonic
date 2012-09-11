@@ -27,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.Playlist;
+import github.daneren2005.dsub.interfaces.Refreshable;
 import github.daneren2005.dsub.service.MusicServiceFactory;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.util.BackgroundTask;
@@ -40,7 +41,8 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class SelectPlaylistActivity extends SubsonicTabActivity implements AdapterView.OnItemClickListener {
+public class SelectPlaylistActivity extends SubsonicActivity 
+implements AdapterView.OnItemClickListener, Refreshable {
 
     private static final int MENU_ITEM_PLAY_ALL = 1;
 	private static final int MENU_ITEM_PLAY_SHUFFLED = 2;
@@ -56,9 +58,9 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
         refresh();
     }
 
-	protected void refresh() {
-		list = (ListView) findViewById(R.id.select_playlist_list);
-        emptyTextView = findViewById(R.id.select_playlist_empty);
+	public void refresh() {
+		list = (ListView) findViewById(android.R.id.list);
+        emptyTextView = findViewById(android.R.id.empty);
         list.setOnItemClickListener(this);
         registerForContextMenu(list);
 
@@ -110,36 +112,42 @@ public class SelectPlaylistActivity extends SubsonicTabActivity implements Adapt
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
-        menu.add(Menu.NONE, MENU_ITEM_PLAY_ALL, MENU_ITEM_PLAY_ALL, R.string.common_play_now);
-		menu.add(Menu.NONE, MENU_ITEM_PLAY_SHUFFLED, MENU_ITEM_PLAY_SHUFFLED, R.string.common_play_shuffled);
+        if (menuInfo != null) {
+        	menu.add(R.id.playlist_context_menu, MENU_ITEM_PLAY_ALL, MENU_ITEM_PLAY_ALL, R.string.common_play_now);
+        	menu.add(R.id.playlist_context_menu, MENU_ITEM_PLAY_SHUFFLED, MENU_ITEM_PLAY_SHUFFLED, R.string.common_play_shuffled);
+        }
     }
 
     @Override
     public boolean onContextItemSelected(android.view.MenuItem menuItem) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-        Playlist playlist = (Playlist) list.getItemAtPosition(info.position);
+        if (menuItem.getGroupId() == R.id.playlist_context_menu) {
+        	AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+        	Playlist playlist = (Playlist) list.getItemAtPosition(info.position);
 
-		Intent intent;
-        switch (menuItem.getItemId()) {
-            case MENU_ITEM_PLAY_ALL:
-                intent = new Intent(SelectPlaylistActivity.this, SelectAlbumActivity.class);
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID, playlist.getId());
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME, playlist.getName());
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_AUTOPLAY, true);
-                startActivity(intent);
-                break;
-			case MENU_ITEM_PLAY_SHUFFLED:
-				intent = new Intent(SelectPlaylistActivity.this, SelectAlbumActivity.class);
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID, playlist.getId());
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME, playlist.getName());
-                intent.putExtra(Constants.INTENT_EXTRA_NAME_AUTOPLAY, true);
-				intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
-				startActivity(intent);
-                break;
-            default:
-                return super.onContextItemSelected(menuItem);
+        	Intent intent;
+        	switch (menuItem.getItemId()) {
+        		case MENU_ITEM_PLAY_ALL:
+        			intent = new Intent(SelectPlaylistActivity.this, SelectAlbumActivity.class);
+        			intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID, playlist.getId());
+        			intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME, playlist.getName());
+        			intent.putExtra(Constants.INTENT_EXTRA_NAME_AUTOPLAY, true);
+        			startActivity(intent);
+        			break;
+        		case MENU_ITEM_PLAY_SHUFFLED:
+        			intent = new Intent(SelectPlaylistActivity.this, SelectAlbumActivity.class);
+        			intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID, playlist.getId());
+        			intent.putExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME, playlist.getName());
+        			intent.putExtra(Constants.INTENT_EXTRA_NAME_AUTOPLAY, true);
+        			intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
+        			startActivity(intent);
+        			break;
+        		default:
+        			return super.onContextItemSelected(menuItem);
+        	}
+        	return true;
+        } else {
+        	return super.onContextItemSelected(menuItem);
         }
-        return true;
     }
 
     @Override

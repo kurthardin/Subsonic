@@ -21,6 +21,7 @@ package github.daneren2005.dsub.activity;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.media.audiofx.Equalizer;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -43,13 +45,13 @@ import github.daneren2005.dsub.service.DownloadServiceImpl;
  * @author Sindre Mehus
  * @version $Id$
  */
+@TargetApi(9)
 public class EqualizerActivity extends Activity {
-
-    private static final int MENU_GROUP_PRESET = 100;
 
     private final Map<Short, SeekBar> bars = new HashMap<Short, SeekBar>();
     private EqualizerController equalizerController;
     private Equalizer equalizer;
+    private View presetButton;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -60,7 +62,7 @@ public class EqualizerActivity extends Activity {
 
         initEqualizer();
 
-        final View presetButton = findViewById(R.id.equalizer_preset);
+        presetButton = findViewById(R.id.equalizer_preset);
         registerForContextMenu(presetButton);
         presetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,29 +90,34 @@ public class EqualizerActivity extends Activity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
+        if (view == presetButton) {
+        	short currentPreset;
+        	try {
+        		currentPreset = equalizer.getCurrentPreset();
+        	} catch (Exception x) {
+        		currentPreset = -1;
+        	}
 
-        short currentPreset;
-        try {
-            currentPreset = equalizer.getCurrentPreset();
-        } catch (Exception x) {
-            currentPreset = -1;
+        	for (short preset = 0; preset < equalizer.getNumberOfPresets(); preset++) {
+        		MenuItem menuItem = menu.add(R.id.equalizer_context_menu, preset, preset, equalizer.getPresetName(preset));
+        		if (preset == currentPreset) {
+        			menuItem.setChecked(true);
+        		}
+        	}
+        	menu.setGroupCheckable(R.id.equalizer_context_menu, true, true);
         }
-
-        for (short preset = 0; preset < equalizer.getNumberOfPresets(); preset++) {
-            MenuItem menuItem = menu.add(MENU_GROUP_PRESET, preset, preset, equalizer.getPresetName(preset));
-            if (preset == currentPreset) {
-                menuItem.setChecked(true);
-            }
-        }
-        menu.setGroupCheckable(MENU_GROUP_PRESET, true, true);
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem menuItem) {
-        short preset = (short) menuItem.getItemId();
-        equalizer.usePreset(preset);
-        updateBars();
-        return true;
+    	if (menuItem.getGroupId() == R.id.equalizer_context_menu) {
+    		short preset = (short) menuItem.getItemId();
+    		equalizer.usePreset(preset);
+    		updateBars();
+    		return true;
+    	} else {
+    		return super.onContextItemSelected(menuItem);
+    	}
     }
 
     private void setEqualizerEnabled(boolean enabled) {

@@ -20,10 +20,10 @@ package github.daneren2005.dsub.util;
 
 import java.util.List;
 
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import github.daneren2005.dsub.activity.SubsonicTabActivity;
 import github.daneren2005.dsub.domain.MusicDirectory;
 
 /**
@@ -31,13 +31,13 @@ import github.daneren2005.dsub.domain.MusicDirectory;
  */
 public class EntryAdapter extends ArrayAdapter<MusicDirectory.Entry> {
 
-    private final SubsonicTabActivity activity;
+    private final Context mContext;
     private final ImageLoader imageLoader;
     private final boolean checkable;
 
-    public EntryAdapter(SubsonicTabActivity activity, ImageLoader imageLoader, List<MusicDirectory.Entry> entries, boolean checkable) {
-        super(activity, android.R.layout.simple_list_item_1, entries);
-        this.activity = activity;
+    public EntryAdapter(Context context, ImageLoader imageLoader, List<MusicDirectory.Entry> entries, boolean checkable) {
+        super(context, android.R.layout.simple_list_item_1, entries);
+        mContext = context;
         this.imageLoader = imageLoader;
         this.checkable = checkable;
     }
@@ -52,7 +52,7 @@ public class EntryAdapter extends ArrayAdapter<MusicDirectory.Entry> {
 //            if (convertView != null && convertView instanceof AlbumView) {
 //                view = (AlbumView) convertView;
 //            } else {
-                view = new AlbumView(activity);
+                view = new AlbumView(mContext);
 //            }
             view.setAlbum(entry, imageLoader);
             return view;
@@ -62,7 +62,7 @@ public class EntryAdapter extends ArrayAdapter<MusicDirectory.Entry> {
             if (convertView != null && convertView instanceof SongView) {
                 view = (SongView) convertView;
             } else {
-                view = new SongView(activity);
+                view = new SongView(mContext);
             }
             view.setSong(entry, checkable);
             return view;

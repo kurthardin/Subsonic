@@ -19,30 +19,15 @@
 
 package github.daneren2005.dsub.activity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.View;
-import android.view.MenuItem;
-import android.widget.AdapterView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.net.Uri;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.Artist;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.domain.SearchCritera;
 import github.daneren2005.dsub.domain.SearchResult;
+import github.daneren2005.dsub.interfaces.Refreshable;
+import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
-import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.util.ArtistAdapter;
 import github.daneren2005.dsub.util.BackgroundTask;
 import github.daneren2005.dsub.util.Constants;
@@ -51,12 +36,29 @@ import github.daneren2005.dsub.util.MergeAdapter;
 import github.daneren2005.dsub.util.TabActivityBackgroundTask;
 import github.daneren2005.dsub.util.Util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
 /**
  * Performs searches and displays the matching artists, albums and songs.
  *
  * @author Sindre Mehus
  */
-public class SearchActivity extends SubsonicTabActivity {
+public class SearchActivity extends SubsonicActivity implements Refreshable {
 
     private static final int DEFAULT_ARTISTS = 3;
     private static final int DEFAULT_ALBUMS = 5;
@@ -102,7 +104,7 @@ public class SearchActivity extends SubsonicTabActivity {
         refresh();
     }
     
-    protected void refresh() {
+    public void refresh() {
     	setTitle(R.string.search_title);
     	
         searchResultsText.setVisibility(View.GONE);
@@ -162,58 +164,65 @@ public class SearchActivity extends SubsonicTabActivity {
         super.onCreateContextMenu(menu, view, menuInfo);
 
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-        Object selectedItem = list.getItemAtPosition(info.position);
+        if (info != null) {
+        	Object selectedItem = list.getItemAtPosition(info.position);
 
-        boolean isArtist = selectedItem instanceof Artist;
-        boolean isAlbum = selectedItem instanceof MusicDirectory.Entry && ((MusicDirectory.Entry) selectedItem).isDirectory();
-        boolean isSong = selectedItem instanceof MusicDirectory.Entry && (!((MusicDirectory.Entry) selectedItem).isDirectory())
-                && (!((MusicDirectory.Entry) selectedItem).isVideo());
+        	boolean isArtist = selectedItem instanceof Artist;
+        	boolean isAlbum = selectedItem instanceof MusicDirectory.Entry && ((MusicDirectory.Entry) selectedItem).isDirectory();
+        	boolean isSong = selectedItem instanceof MusicDirectory.Entry && (!((MusicDirectory.Entry) selectedItem).isDirectory())
+        			&& (!((MusicDirectory.Entry) selectedItem).isVideo());
 
-        if (isArtist || isAlbum) {
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate(R.menu.select_album_context, menu);
-        } else if (isSong) {
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate(R.menu.select_song_context, menu);
+        	if (isArtist || isAlbum) {
+        		MenuInflater inflater = getMenuInflater();
+        		inflater.inflate(R.menu.select_album_context, menu);
+        	} else if (isSong) {
+        		MenuInflater inflater = getMenuInflater();
+        		inflater.inflate(R.menu.select_song_context, menu);
+        	}
         }
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem menuItem) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-        Object selectedItem = list.getItemAtPosition(info.position);
+        if (menuItem.getGroupId() == R.id.select_album_context_menu ||
+        		menuItem.getGroupId() == R.id.select_song_context_menu) {
+        	AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+        	Object selectedItem = list.getItemAtPosition(info.position);
 
-        Artist artist = selectedItem instanceof Artist ? (Artist) selectedItem : null;
-        MusicDirectory.Entry entry = selectedItem instanceof MusicDirectory.Entry ? (MusicDirectory.Entry) selectedItem : null;
-        String id = artist != null ? artist.getId() : entry.getId();
+        	Artist artist = selectedItem instanceof Artist ? (Artist) selectedItem : null;
+        	MusicDirectory.Entry entry = selectedItem instanceof MusicDirectory.Entry ? (MusicDirectory.Entry) selectedItem : null;
+        	String id = artist != null ? artist.getId() : entry.getId();
 
-        switch (menuItem.getItemId()) {
-            case R.id.album_menu_play_now:
-                downloadRecursively(id, false, false, true, false);
-                break;
-			case R.id.album_menu_play_shuffled:
-				downloadRecursively(id, false, false, true, true);
-				break;
-            case R.id.album_menu_play_last:
-                downloadRecursively(id, false, true, false, false);
-                break;
-            case R.id.album_menu_pin:
-                downloadRecursively(id, true, true, false, false);
-                break;
-            case R.id.song_menu_play_now:
-                onSongSelected(entry, false, false, true, false);
-                break;
-            case R.id.song_menu_play_next:
-                onSongSelected(entry, false, true, false, true);
-                break;
-            case R.id.song_menu_play_last:
-                onSongSelected(entry, false, true, false, false);
-                break;
-            default:
-                return super.onContextItemSelected(menuItem);
+        	switch (menuItem.getItemId()) {
+        		case R.id.album_menu_play_now:
+        			downloadRecursively(id, false, false, true, false);
+        			break;
+        		case R.id.album_menu_play_shuffled:
+        			downloadRecursively(id, false, false, true, true);
+        			break;
+        		case R.id.album_menu_play_last:
+        			downloadRecursively(id, false, true, false, false);
+        			break;
+        		case R.id.album_menu_pin:
+        			downloadRecursively(id, true, true, false, false);
+        			break;
+        		case R.id.song_menu_play_now:
+        			onSongSelected(entry, false, false, true, false);
+        			break;
+        		case R.id.song_menu_play_next:
+        			onSongSelected(entry, false, true, false, true);
+        			break;
+        		case R.id.song_menu_play_last:
+        			onSongSelected(entry, false, true, false, false);
+        			break;
+        		default:
+        			return super.onContextItemSelected(menuItem);
+        	}
+
+        	return true;
+        } else {
+        	return super.onContextItemSelected(menuItem);
         }
-
-        return true;
     }
 
     private void search(final String query, final boolean autoplay) {
@@ -328,7 +337,7 @@ public class SearchActivity extends SubsonicTabActivity {
     }
 
     private void onSongSelected(MusicDirectory.Entry song, boolean save, boolean append, boolean autoplay, boolean playNext) {
-        DownloadService downloadService = getDownloadService();
+        DownloadService downloadService = Util.getDownloadService(this);
         if (downloadService != null) {
             if (!append) {
                 downloadService.clear();
