@@ -19,6 +19,7 @@
 package github.daneren2005.dsub.fragment;
 
 import github.daneren2005.dsub.R;
+import github.daneren2005.dsub.activity.DownloadActivity;
 import github.daneren2005.dsub.activity.SelectAlbumActivity;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.service.DownloadFile;
@@ -201,22 +202,22 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     }
 
     private void playAll(final boolean shuffle) {
-    	//TODO: Fix play all
+//    	ListView entryListView = getListView();
 //        boolean hasSubFolders = false;
-//        for (int i = 0; i < mEntryListView.getCount(); i++) {
-//            MusicDirectory.Entry entry = (MusicDirectory.Entry) mEntryListView.getItemAtPosition(i);
+//        for (int i = 0; i < entryListView.getCount(); i++) {
+//            MusicDirectory.Entry entry = (MusicDirectory.Entry) entryListView.getItemAtPosition(i);
 //            if (entry != null && entry.isDirectory()) {
 //                hasSubFolders = true;
 //                break;
 //            }
 //        }
-//
+
 //        if (hasSubFolders && mMusicDirectoryFetchId != null) {
 //            getMainActivity().downloadRecursively(mMusicDirectoryFetchId, false, false, true, shuffle);
 //        } else {
-//            selectAll(true, false);
-//            download(false, false, true, false, shuffle);
-//            selectAll(false, false);
+            selectAll(true, false);
+            download(false, false, true, false, shuffle);
+            selectAll(false, false);
 //        }
     }
 
@@ -421,7 +422,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
                 getMainActivity().warnIfNetworkOrStorageUnavailable();
                 Util.getDownloadService(getActivity()).download(songs, save, autoplay, playNext, shuffle);
                 if (autoplay) {
-//                    showTabActivity(DownloadActivity.class); // TODO Show 'now playing'
+                    startActivity(DownloadActivity.class); // TODO: Show 'now playing'
                 } else if (save) {
                     Util.toast(getActivity(),
                                getResources().getQuantityString(R.plurals.select_album_n_songs_downloading, songs.size(), songs.size()));

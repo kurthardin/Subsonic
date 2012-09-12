@@ -20,6 +20,7 @@
 package github.daneren2005.dsub.fragment;
 
 import github.daneren2005.dsub.R;
+import github.daneren2005.dsub.activity.DownloadActivity;
 import github.daneren2005.dsub.activity.MainActivity;
 import github.daneren2005.dsub.activity.SelectAlbumActivity;
 import github.daneren2005.dsub.domain.Artist;
@@ -180,9 +181,9 @@ implements OnItemSelectedListener {
 	        	
 	        case R.id.action_shuffle:
 // TODO: Play shuffled and show 'now playing'
-//	        	Intent intent = new Intent(getActivity(), DownloadActivity.class);
-//                intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
-//                showTabActivity(DownloadActivity.class, intent);
+	        	Intent intent = new Intent(getActivity(), DownloadActivity.class);
+                intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
+                startActivity(intent);
                 return true;
                 
             default:
