@@ -75,6 +75,7 @@ public class DownloadServiceImpl extends Service implements DownloadService {
 
     
     private RemoteControlClientHelper mRemoteControl;
+    private NowPlayingListener mNowPlayingListener;
     
     private final IBinder binder = new SimpleServiceBinder<DownloadService>(this);
     private MediaPlayer mediaPlayer;
@@ -205,6 +206,11 @@ public class DownloadServiceImpl extends Service implements DownloadService {
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
+    }
+    
+    @Override
+    public void setNowPlayListener(NowPlayingListener listener) {
+    	mNowPlayingListener = listener;
     }
 
     @Override
@@ -441,6 +447,9 @@ public class DownloadServiceImpl extends Service implements DownloadService {
         
         MusicDirectory.Entry currentSong = currentPlaying == null ? null: currentPlaying.getSong();
         mRemoteControl.updateMetadata(this, currentSong);
+        if (mNowPlayingListener != null) {
+        	mNowPlayingListener.onCurrentSongChanged(this, currentSong);
+        }
     }
 
     @Override

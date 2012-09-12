@@ -31,7 +31,9 @@ import github.daneren2005.dsub.domain.RepeatMode;
  * @version $Id$
  */
 public interface DownloadService {
-
+	
+	public void setNowPlayListener(NowPlayingListener listener);
+	
     void download(List<MusicDirectory.Entry> songs, boolean save, boolean autoplay, boolean playNext, boolean shuffle);
 	void downloadBackground(List<MusicDirectory.Entry> songs, boolean save);
 
@@ -110,4 +112,9 @@ public interface DownloadService {
     void setJukeboxEnabled(boolean b);
 
     void adjustJukeboxVolume(boolean up);
+    
+    public static interface NowPlayingListener {
+    	public void onCurrentSongChanged(DownloadService service, MusicDirectory.Entry song);
+    }
+    
 }

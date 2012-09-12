@@ -21,6 +21,7 @@ package github.daneren2005.dsub.activity;
 
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.MusicDirectory;
+import github.daneren2005.dsub.domain.MusicDirectory.Entry;
 import github.daneren2005.dsub.fragment.SelectAlbumFragment;
 import github.daneren2005.dsub.fragment.SelectAlbumFragment.AlbumListType;
 import github.daneren2005.dsub.fragment.SelectArtistFragment;
@@ -28,16 +29,20 @@ import github.daneren2005.dsub.fragment.SelectPlaylistFragment;
 import github.daneren2005.dsub.fragment.SubsonicTabFragment;
 import github.daneren2005.dsub.interfaces.Exitable;
 import github.daneren2005.dsub.interfaces.Restartable;
+import github.daneren2005.dsub.service.DownloadFile;
 import github.daneren2005.dsub.service.DownloadService;
+import github.daneren2005.dsub.service.DownloadService.NowPlayingListener;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
+import github.daneren2005.dsub.util.BackgroundTask;
 import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.FileUtil;
 import github.daneren2005.dsub.util.ImageLoader;
 import github.daneren2005.dsub.util.MainOptionsMenuHelper;
 import github.daneren2005.dsub.util.ModalBackgroundTask;
 import github.daneren2005.dsub.util.SelectServerHelper;
+import github.daneren2005.dsub.util.TabActivityBackgroundTask;
 import github.daneren2005.dsub.util.Util;
 
 import java.io.File;
@@ -50,6 +55,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -58,23 +64,28 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.test.PerformanceTestCase;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
-public class MainActivity extends SherlockFragmentActivity implements Exitable, Restartable {
+public class MainActivity extends SherlockFragmentActivity 
+implements NowPlayingListener, Exitable, Restartable {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
     private static ImageLoader IMAGE_LOADER;
     
     private MainActivityPagerAdapter mPagerAdapter;
     private ViewPager mViewPager;
+    
+    private View mNowPlayingView;
 
     private boolean destroyed;
 
@@ -92,6 +103,25 @@ public class MainActivity extends SherlockFragmentActivity implements Exitable, 
         
         startService(new Intent(this, DownloadServiceImpl.class));
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        
+        new AsyncTask<Integer, Integer, DownloadService>() {
+
+			@Override
+			protected DownloadService doInBackground(Integer... params) {
+				DownloadService service;
+		        do {
+		        	service = Util.getDownloadService(MainActivity.this);
+		        } while (service == null);
+				return service;
+			}
+
+			protected void onPostExecute(DownloadService result) {
+				result.setNowPlayListener(MainActivity.this);
+				DownloadFile currentFile = result.getCurrentPlaying();
+				onCurrentSongChanged(result, currentFile == null ? null : currentFile.getSong());
+			}
+
+		}.execute();
      
         mPagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -108,6 +138,14 @@ public class MainActivity extends SherlockFragmentActivity implements Exitable, 
         } else {
         	mViewPager.setCurrentItem(prevItem);
         }
+        
+        mNowPlayingView = findViewById(R.id.now_playing_view);
+        mNowPlayingView.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(MainActivity.this, DownloadActivity.class));
+			}
+		});
         
         handleExtras(getIntent());
     }
@@ -194,6 +232,10 @@ public class MainActivity extends SherlockFragmentActivity implements Exitable, 
         super.onDestroy();
         destroyed = true;
         getImageLoader().clear();
+        DownloadService service = Util.getDownloadService(this);
+        if (service != null) {
+        	service.setNowPlayListener(null);
+        }
     }
 
 
@@ -472,6 +514,15 @@ public class MainActivity extends SherlockFragmentActivity implements Exitable, 
     		}
     	}
     }
+
+	@Override
+	public void onCurrentSongChanged(DownloadService service, Entry song) {
+		if (song == null) {
+			mNowPlayingView.setVisibility(View.GONE);
+		} else {
+			mNowPlayingView.setVisibility(View.VISIBLE);
+		}
+	}
 }
 
 // TODO: Previous implementation
