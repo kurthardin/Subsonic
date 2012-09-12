@@ -58,6 +58,7 @@ public class SelectArtistFragment extends SubsonicTabFragment
 implements OnItemSelectedListener {
 
     private List<MusicFolder> musicFolders;
+    private View mMusicFolderHeader;
     private IcsSpinner mMusicFolderSpinner;
     
     private boolean mShouldRefresh;
@@ -72,6 +73,8 @@ implements OnItemSelectedListener {
         setHasOptionsMenu(true);
     	registerForContextMenu(getListView());
     	
+    	mMusicFolderHeader = getView().findViewById(R.id.music_folder_header);
+    	
     	mMusicFolderSpinner = (IcsSpinner) getView().findViewById(R.id.music_folder_spinner);
         musicFolders = null;
         loadMusicFolders();
@@ -80,6 +83,7 @@ implements OnItemSelectedListener {
     }
     
     public void refresh() {
+    	mMusicFolderHeader.setVisibility(Util.isOffline(getActivity()) ? View.GONE : View.VISIBLE);
     	loadArtists(true);
     }
     

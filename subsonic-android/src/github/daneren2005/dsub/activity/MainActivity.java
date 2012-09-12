@@ -132,11 +132,11 @@ implements NowPlayingListener, Exitable, Restartable {
         		notifyFragmentOnPageSelected(position);
         	}
         });
-        int prevItem = 2; // TODO: Remember previous tab
-        if (prevItem == mViewPager.getCurrentItem()) {
-        	notifyFragmentOnPageSelected(prevItem);
+        int position = Util.isOffline(this) ? 0 : 2;
+        if (position == mViewPager.getCurrentItem()) {
+        	notifyFragmentOnPageSelected(position);
         } else {
-        	mViewPager.setCurrentItem(prevItem);
+        	mViewPager.setCurrentItem(position);
         }
         
         mNowPlayingView = findViewById(R.id.now_playing_view);
@@ -427,6 +427,19 @@ implements NowPlayingListener, Exitable, Restartable {
     }
     
     public class MainActivityPagerAdapter extends FragmentPagerAdapter {
+    	
+    	private final String [] titles = new String [] {
+    			"New", 
+    			"Recent", 
+    			"Artists", 
+    			getString(R.string.main_albums_highest),
+    			getString(R.string.main_albums_frequent),
+    			getString(R.string.main_albums_random),
+    			getString(R.string.button_bar_playlists)
+    	};
+    	
+    	private final String offlineTitle = "Artists";
+    	
     	public MainActivityPagerAdapter(FragmentManager fm) {
     		super(fm);
     	}
@@ -435,83 +448,64 @@ implements NowPlayingListener, Exitable, Restartable {
     	public Fragment getItem(int i) {
     		Fragment fragment;
     		Bundle args = new Bundle();
-    		switch(i) {
-    			case 0:
-    				fragment = new SelectAlbumFragment();
-    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.NEWEST.ordinal());
-    				break;
-    				
-    			case 1:
-    				fragment = new SelectAlbumFragment();
-    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.RECENT.ordinal());
-    				break;
-    			
-    			case 2:
-    				fragment = new SelectArtistFragment();
-    				break;
-    				
-    			case 3:
-    				fragment = new SelectAlbumFragment();
-    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.HIGHEST.ordinal());
-    				break;
-    				
-    			case 4:
-    				fragment = new SelectAlbumFragment();
-    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.FREQUENT.ordinal());
-    				break;
-    				
-    			case 5:
-    				fragment = new SelectAlbumFragment();
-    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.RANDOM.ordinal());
-    				break;
-    			
-    			case 6:
-    				fragment = new SelectPlaylistFragment();
-    				break;
-    			
-    			default:
-    				fragment = null;
+    		if (Util.isOffline(MainActivity.this)) {
+    			return new SelectArtistFragment();
+    		} else {
+    			switch(i) {
+					case 0:
+						fragment = new SelectAlbumFragment();
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.NEWEST.ordinal());
+						break;
+
+					case 1:
+						fragment = new SelectAlbumFragment();
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.RECENT.ordinal());
+						break;
+
+					case 2:
+						fragment = new SelectArtistFragment();
+						break;
+
+					case 3:
+						fragment = new SelectAlbumFragment();
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.HIGHEST.ordinal());
+						break;
+
+					case 4:
+						fragment = new SelectAlbumFragment();
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.FREQUENT.ordinal());
+						break;
+
+					case 5:
+						fragment = new SelectAlbumFragment();
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.RANDOM.ordinal());
+						break;
+
+					case 6:
+						fragment = new SelectPlaylistFragment();
+						break;
+
+					default:
+						fragment = null;
+    			}
     		}
     		
 //    		TODO: Put other arguments?
-    		fragment.setArguments(args);
+    		if (fragment != null) {
+    			fragment.setArguments(args);
+    		}
     		
     		return fragment;
     	}
 
     	@Override
     	public int getCount() {
-    		return 7;
+    		return Util.isOffline(MainActivity.this) ? 1 : 7;
     	}
 
     	@Override
     	public CharSequence getPageTitle(int position) {
-    		switch (position) {
-    			case 0:
-    				return "New";//getString(R.string.main_albums_newest);
-
-    			case 1:
-    				return "Recent";//getString(R.string.main_albums_recent);
-
-    			case 2:
-    				return "Artists";//getString(R.string.button_bar_browse);
-    			
-    			case 3:
-    				return getString(R.string.main_albums_highest);
-    				
-    			case 4:
-    				return getString(R.string.main_albums_frequent);
-    				
-    			case 5:
-    				return getString(R.string.main_albums_random);
-    				
-    			case 6:
-    				return getString(R.string.button_bar_playlists);
-    				
-    			default:
-    				return null;
-    			
-    		}
+    		return Util.isOffline(MainActivity.this) ? offlineTitle : titles[position];
     	}
     }
 

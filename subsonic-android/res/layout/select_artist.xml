@@ -6,6 +6,7 @@
     android:orientation="vertical" >
  
     <LinearLayout
+        android:id="@+id/music_folder_header"
         style="com.actionbarsherlock.R.styleable.SherlockActionBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
