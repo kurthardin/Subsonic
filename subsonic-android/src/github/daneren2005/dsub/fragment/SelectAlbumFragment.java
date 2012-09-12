@@ -54,10 +54,10 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
 public class SelectAlbumFragment extends SubsonicTabFragment {
-//implements ActionBar.OnNavigationListener { // TODO: Remove albums list navigation
+//implements ActionBar.OnNavigationListener { // TODO: Remove ActionBar list navigation
 
     private static final String TAG = SelectAlbumFragment.class.getSimpleName();
-//    private static final String [] kNavListKeys = new String [] {"frequent", "highest", "newest", "random", "recent"}; // TODO: Remove albums list navigation
+//    private static final String [] kNavListKeys = new String [] {"frequent", "highest", "newest", "random", "recent"}; // TODO: Remove ActionBar list navigation
 
     private View footer;
     private Button selectButton;
@@ -70,11 +70,14 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     private Button moreButton;
     private boolean licenseValid;
     
-    private String mAlbumListType;
+    private AlbumListType mAlbumListType;
+    private int mAlbumListDefaultFetchSize;
+    private int mAlbumListDefaultFetchOffset;
+    
     private int mAlbumListFetchSize;
     private int mAlbumListFetchOffset;
     
-    private boolean mShouldRefresh;
+//    private boolean mShouldRefresh;
     private boolean mResetScrollPosition;
 
     /**
@@ -86,10 +89,13 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
 
         Bundle args = getArguments();
         if (args != null) {
-        	mAlbumListType = args.getString(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
-        	mAlbumListFetchSize = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 20);
-        	mAlbumListFetchOffset = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
-        	mShouldRefresh = args.getBoolean(Constants.INTENT_EXTRA_NAME_REFRESH, false);
+        	mAlbumListType = AlbumListType.values()[args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE)];
+        	if (mAlbumListType == null) {
+        		throw new IllegalArgumentException("Must specify AlbumListType for SelectAlbumFragment in its arguments Bundle with putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.TYPE.ordinal()");
+        	}
+        	mAlbumListDefaultFetchSize = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 20);
+        	mAlbumListDefaultFetchOffset = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
+//        	mShouldRefresh = args.getBoolean(Constants.INTENT_EXTRA_NAME_REFRESH, false);
         }
         
     }
@@ -191,7 +197,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     
     @Override
     public void doSelect() {
-// TODO: Remove albums list navigation
+// TODO: Remove ActionBar list navigation
 //    	MainActivity activity = getMainActivity();
 //    	List<CharSequence> navList = Arrays.asList(new CharSequence [] {
 //    			getString(R.string.dashboard_albums_frequent), 
@@ -214,7 +220,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     	refresh();
     }
 
-// TODO: Remove albums list navigation
+// TODO: Remove ActionBar list navigation
 //    @Override
 //    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
 //    	mAlbumListType = kNavListKeys[itemPosition];
@@ -226,10 +232,10 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     public void refresh() {
         enableButtons();
         
-    	mAlbumListFetchSize = 20;
-    	mAlbumListFetchOffset = 0;
+    	mAlbumListFetchSize = mAlbumListDefaultFetchSize;
+    	mAlbumListFetchOffset = mAlbumListDefaultFetchOffset;
         
-        getAlbumList(mAlbumListType, mAlbumListFetchSize, mAlbumListFetchOffset);
+        getAlbumList(mAlbumListType.getName(), mAlbumListFetchSize, mAlbumListFetchOffset);
     }
 
     private void playAll(final boolean shuffle) {
@@ -332,7 +338,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     	}
     }
     
-    public String getAlbumListType() {
+    public AlbumListType getAlbumListType() {
     	return mAlbumListType;
     }
 
@@ -353,7 +359,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
                         public void onClick(View view) {
                         	mAlbumListFetchOffset = getListView().getCount();
                         	mAlbumListFetchSize = mAlbumListFetchOffset;
-                        	getAlbumList(mAlbumListType, mAlbumListFetchSize, mAlbumListFetchOffset);
+                        	getAlbumList(mAlbumListType.getName(), mAlbumListFetchSize, mAlbumListFetchOffset);
                         }
                     });
                 }
@@ -633,5 +639,23 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
 //                playAll(getIntent().getBooleanExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, false));
 //            }
         }
+    }
+    
+    public enum AlbumListType {
+    	FREQUENT("frequent"), 
+    	HIGHEST("highest"), 
+    	NEWEST("newest"), 
+    	RANDOM("random"), 
+    	RECENT("recent");
+    	
+    	private final String mName;
+    	
+    	private AlbumListType(String name) {
+    		mName = name;
+    	}
+    	
+    	public String getName() {
+    		return mName;
+    	}
     }
 }

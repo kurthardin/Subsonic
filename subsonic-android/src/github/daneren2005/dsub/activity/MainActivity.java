@@ -22,6 +22,7 @@ package github.daneren2005.dsub.activity;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.fragment.SelectAlbumFragment;
+import github.daneren2005.dsub.fragment.SelectAlbumFragment.AlbumListType;
 import github.daneren2005.dsub.fragment.SelectArtistFragment;
 import github.daneren2005.dsub.fragment.SelectPlaylistFragment;
 import github.daneren2005.dsub.fragment.SubsonicTabFragment;
@@ -395,12 +396,12 @@ public class MainActivity extends SherlockFragmentActivity implements Exitable, 
     		switch(i) {
     			case 0:
     				fragment = new SelectAlbumFragment();
-    				args.putString(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, "newest");
+    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.NEWEST.ordinal());
     				break;
     				
     			case 1:
     				fragment = new SelectAlbumFragment();
-    				args.putString(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, "recent");
+    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.RECENT.ordinal());
     				break;
     			
     			case 2:
@@ -409,17 +410,17 @@ public class MainActivity extends SherlockFragmentActivity implements Exitable, 
     				
     			case 3:
     				fragment = new SelectAlbumFragment();
-    				args.putString(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, "highest");
+    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.HIGHEST.ordinal());
     				break;
     				
     			case 4:
     				fragment = new SelectAlbumFragment();
-    				args.putString(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, "frequent");
+    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.FREQUENT.ordinal());
     				break;
     				
     			case 5:
     				fragment = new SelectAlbumFragment();
-    				args.putString(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, "random");
+    				args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.RANDOM.ordinal());
     				break;
     			
     			case 6:
