@@ -18,50 +18,7 @@
  */
 package github.daneren2005.dsub.activity;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.LinkedList;
-import java.util.List;
-
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.Window;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.media.AudioManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.BaseAdapter;
-import android.widget.Spinner;
-import android.widget.TextView;
-import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.domain.MusicDirectory;
-import github.daneren2005.dsub.service.DownloadService;
-import github.daneren2005.dsub.service.DownloadServiceImpl;
-import github.daneren2005.dsub.service.MusicService;
-import github.daneren2005.dsub.service.MusicServiceFactory;
-import github.daneren2005.dsub.util.Constants;
-import github.daneren2005.dsub.util.FileUtil;
-import github.daneren2005.dsub.util.ImageLoader;
-import github.daneren2005.dsub.util.ModalBackgroundTask;
-import github.daneren2005.dsub.util.Util;
 
 /**
  * @author Sindre Mehus

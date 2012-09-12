@@ -26,7 +26,6 @@ import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
 import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.EntryAdapter;
-import github.daneren2005.dsub.util.MainOptionsMenuHelper;
 import github.daneren2005.dsub.util.Pair;
 import github.daneren2005.dsub.util.TabActivityBackgroundTask;
 import github.daneren2005.dsub.util.Util;
