@@ -48,9 +48,6 @@ public class SelectPlaylistFragment extends SubsonicTabFragment {
     private static final int MENU_ITEM_PLAY_ALL = 1;
 	private static final int MENU_ITEM_PLAY_SHUFFLED = 2;
 
-//    private ListView list;
-//    private View emptyTextView;
-    
     private boolean mShouldRefresh;
 
     @Override
@@ -67,17 +64,12 @@ public class SelectPlaylistFragment extends SubsonicTabFragment {
     
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-//    	list = (ListView) view.findViewById(R.id.select_playlist_list);
-//        emptyTextView = view.findViewById(R.id.select_playlist_empty);
-//        list.setOnItemClickListener(this);
         registerForContextMenu(getListView());
     	super.onActivityCreated(savedInstanceState);
     }
     
     @Override
 	public void refresh() {
-//        // Title: Playlists
-//        getActivity().setTitle(R.string.playlist_label);
         load();
 	}
 
@@ -86,7 +78,6 @@ public class SelectPlaylistFragment extends SubsonicTabFragment {
             @Override
             protected List<Playlist> doInBackground() throws Throwable {
                 MusicService musicService = MusicServiceFactory.getMusicService(getMainActivity());
-//                boolean refresh = getIntent().getBooleanExtra(Constants.INTENT_EXTRA_NAME_REFRESH, false);
                 return musicService.getPlaylists(mShouldRefresh, getMainActivity(), this);
             }
 
@@ -94,7 +85,6 @@ public class SelectPlaylistFragment extends SubsonicTabFragment {
             protected void done(List<Playlist> result) {
                 updateProgress(getString(R.string.select_artist_empty));
                 setListAdapter(new PlaylistAdapter(getMainActivity(), PlaylistAdapter.PlaylistComparator.sort(result)));
-//                emptyTextView.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
             }
         };
         task.execute();
@@ -115,7 +105,7 @@ public class SelectPlaylistFragment extends SubsonicTabFragment {
 	        
         }
 
-        return false;//super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
