@@ -53,7 +53,8 @@ public abstract class TabFragmentBackgroundTask<T> extends BackgroundTask<T> {
     }
 
     private boolean isCancelled() {
-        return ((MainActivity) tabFragment.getActivity()).isDestroyed();
+    	MainActivity activity = tabFragment == null ? null : (MainActivity) tabFragment.getActivity();
+        return activity == null ? true : activity.isDestroyed();
     }
 
     @Override

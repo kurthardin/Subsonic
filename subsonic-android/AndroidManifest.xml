@@ -23,7 +23,7 @@
         <activity android:name="github.daneren2005.dsub.activity.MainActivity"
                   android:label="DSub"
                   android:configChanges="orientation|keyboardHidden"
-                  android:launchMode="singleTop">
+                  android:launchMode="standard">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
