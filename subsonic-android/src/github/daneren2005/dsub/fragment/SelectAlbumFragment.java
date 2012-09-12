@@ -54,10 +54,8 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
 public class SelectAlbumFragment extends SubsonicTabFragment {
-//implements ActionBar.OnNavigationListener { // TODO: Remove ActionBar list navigation
 
     private static final String TAG = SelectAlbumFragment.class.getSimpleName();
-//    private static final String [] kNavListKeys = new String [] {"frequent", "highest", "newest", "random", "recent"}; // TODO: Remove ActionBar list navigation
 
     private View footer;
     private Button selectButton;
@@ -77,7 +75,6 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     private int mAlbumListFetchSize;
     private int mAlbumListFetchOffset;
     
-//    private boolean mShouldRefresh;
     private boolean mResetScrollPosition;
 
     /**
@@ -95,7 +92,6 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
         	}
         	mAlbumListDefaultFetchSize = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 20);
         	mAlbumListDefaultFetchOffset = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
-//        	mShouldRefresh = args.getBoolean(Constants.INTENT_EXTRA_NAME_REFRESH, false);
         }
         
     }
@@ -194,40 +190,6 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
             }
         }
     }
-    
-    @Override
-    public void doSelect() {
-// TODO: Remove ActionBar list navigation
-//    	MainActivity activity = getMainActivity();
-//    	List<CharSequence> navList = Arrays.asList(new CharSequence [] {
-//    			getString(R.string.dashboard_albums_frequent), 
-//    			getString(R.string.dashboard_albums_highest),
-//    			getString(R.string.dashboard_albums_newest),
-//    			getString(R.string.dashboard_albums_random),
-//    			getString(R.string.dashboard_albums_recent)});
-//    	ArrayAdapter<CharSequence> navListAdapter = 
-//    			new ArrayAdapter<CharSequence>(activity, R.layout.sherlock_spinner_item, navList);
-//        navListAdapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
-//
-//        activity.setTitle(null);
-//        activity.getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-//        activity.getSupportActionBar().setListNavigationCallbacks(navListAdapter, SelectAlbumFragment.this);
-//
-//// TODO: Remember selected album type?
-////        String musicFolderId = Util.getSelectedMusicFolderId(activity);
-////        int dropDownId = musicFolderId == null ? 0 : Integer.valueOf(musicFolderId) + 1;
-//        activity.getSupportActionBar().setSelectedNavigationItem(0);
-    	refresh();
-    }
-
-// TODO: Remove ActionBar list navigation
-//    @Override
-//    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-//    	mAlbumListType = kNavListKeys[itemPosition];
-//    	mResetScrollPosition = true;
-//        refresh();
-//        return true;
-//    }
 
     public void refresh() {
         enableButtons();

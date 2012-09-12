@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockListFragment;
 
 /**
@@ -35,14 +36,18 @@ import com.actionbarsherlock.app.SherlockListFragment;
  */
 public abstract class SubsonicTabFragment extends SherlockListFragment implements Refreshable {
 	
-	private boolean mShouldSelect;
-	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-    	if (shouldSelect()) {
-    		select();
-    	}
+		MainActivity mainActivity = getMainActivity();
+    	mainActivity.setTitle(R.string.common_appname);
+		mainActivity.getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		refresh();
 	}
 	
 	public void startActivity(Class<? extends Activity> newActivity) {
@@ -55,23 +60,10 @@ public abstract class SubsonicTabFragment extends SherlockListFragment implement
 	}
 	
 	public final void onPageSelected() {
-		if (getActivity() == null) {
-			mShouldSelect = true;
-		} else {
-			select();
+		if (getActivity() != null) {
+			refresh();
 		}
 	}
-	
-	public final boolean shouldSelect() {
-		return mShouldSelect;
-	}
-	
-	protected void select() {
-		mShouldSelect = false;
-		doSelect();
-	}
-	
-    protected abstract void doSelect();
 	
     public abstract void refresh();
     
@@ -80,11 +72,14 @@ public abstract class SubsonicTabFragment extends SherlockListFragment implement
     }
     
     public void setProgressVisible(boolean visible) {
-        View view = getView().findViewById(R.id.tab_progress_bar);
-        if (view != null) {
-            view.setVisibility(visible ? View.VISIBLE : View.GONE);
-        }
-        getMainActivity().setProgressVisible(visible);
+    	View view = getView();
+    	if (view != null) {
+    		View progressView = view.findViewById(R.id.tab_progress_bar);
+    		if (progressView != null) {
+    			progressView.setVisibility(visible ? View.VISIBLE : View.GONE);
+    		}
+    		getMainActivity().setProgressVisible(visible);
+    	}
     }
     
     public void updateProgress(String message) {

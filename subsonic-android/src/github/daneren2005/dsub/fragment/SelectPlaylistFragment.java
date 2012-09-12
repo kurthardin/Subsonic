@@ -20,7 +20,6 @@
 package github.daneren2005.dsub.fragment;
 
 import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.activity.MainActivity;
 import github.daneren2005.dsub.activity.SelectAlbumActivity;
 import github.daneren2005.dsub.domain.Playlist;
 import github.daneren2005.dsub.service.MusicService;
@@ -40,7 +39,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -74,14 +72,6 @@ public class SelectPlaylistFragment extends SubsonicTabFragment {
 //        list.setOnItemClickListener(this);
         registerForContextMenu(getListView());
     	super.onActivityCreated(savedInstanceState);
-    }
-    
-    @Override 
-    protected void doSelect() {
-		MainActivity mainActivity = getMainActivity();
-		mainActivity.getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-		mainActivity.setTitle(null);
-		refresh();
     }
     
     @Override

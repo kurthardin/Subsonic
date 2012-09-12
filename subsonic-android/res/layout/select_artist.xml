@@ -1,27 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent">
+    android:id="@+id/select_artist_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+ 
+    <LinearLayout
+        style="com.actionbarsherlock.R.styleable.SherlockActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:padding="5dp" >
 
-    <ListView android:id="@android:id/list"
-              android:textFilterEnabled="true"
-              android:fastScrollEnabled="true"
-              android:layout_width="fill_parent"
-              android:layout_height="0dip"
-              android:layout_weight="1.0"/>
-    
-    <!-- 
-    <TextView
-		    android:id="@android:id/empty"
-		    android:layout_width="match_parent"
-		    android:layout_height="match_parent"
-		    android:gravity="center_horizontal"
-		    android:text="@string/select_artist.empty"
-            android:padding="10dip" />
-	-->
-	
-	<include layout="@layout/tab_progress"/>
-	
-</LinearLayout>
+        <com.actionbarsherlock.internal.widget.IcsSpinner
+            android:id="@+id/music_folder_spinner"
+            style="com.actionbarsherlock.R.styleable.SherlockSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" />
+     
+	</LinearLayout>
 
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="fill_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1.0"
+            android:fastScrollEnabled="true"
+            android:textFilterEnabled="true" />
+
+        <include layout="@layout/tab_progress" />
+    </LinearLayout>

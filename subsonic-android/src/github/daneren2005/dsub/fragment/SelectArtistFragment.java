@@ -36,7 +36,6 @@ import github.daneren2005.dsub.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -47,28 +46,20 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.internal.widget.IcsAdapterView;
+import com.actionbarsherlock.internal.widget.IcsAdapterView.OnItemSelectedListener;
+import com.actionbarsherlock.internal.widget.IcsSpinner;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
 public class SelectArtistFragment extends SubsonicTabFragment 
-implements ActionBar.OnNavigationListener {
+implements OnItemSelectedListener {
 
-//    private ListView artistList;
     private List<MusicFolder> musicFolders;
+    private IcsSpinner mMusicFolderSpinner;
     
     private boolean mShouldRefresh;
-
-    /**
-     * Called when the activity is first created.
-     */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
     
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,24 +68,17 @@ implements ActionBar.OnNavigationListener {
     
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-//    	artistList = (ListView) view.findViewById(R.id.select_artist_list);
-//    	artistList.setOnItemClickListener(this);
+        setHasOptionsMenu(true);
     	registerForContextMenu(getListView());
+    	
+    	mMusicFolderSpinner = (IcsSpinner) getView().findViewById(R.id.music_folder_spinner);
+        musicFolders = null;
+        loadMusicFolders();
+        
     	super.onActivityCreated(savedInstanceState);
     }
     
-    @Override
-    protected void doSelect() {
-        musicFolders = null;
-        loadMusicFolders();
-    }
-
     public void refresh() {
-    	if (Util.isOffline(getActivity())) {
-    		getActivity().setTitle(R.string.music_library_label_offline);
-    	} else {
-    		getActivity().setTitle(null);
-    	}
     	loadArtists(true);
     }
     
@@ -106,7 +90,6 @@ implements ActionBar.OnNavigationListener {
         BackgroundTask<List<MusicFolder>> task = new TabFragmentBackgroundTask<List<MusicFolder>>(SelectArtistFragment.this) {
             @Override
             protected List<MusicFolder> doInBackground() throws Throwable {
-//                boolean refresh = getIntent().getBooleanExtra(Constants.INTENT_EXTRA_NAME_REFRESH, false);
                 MusicService musicService = MusicServiceFactory.getMusicService(getActivity());
                 if (!Util.isOffline(getActivity())) {
                     return musicService.getMusicFolders(mShouldRefresh, getActivity(), this);
@@ -119,22 +102,20 @@ implements ActionBar.OnNavigationListener {
             protected void done(List<MusicFolder> result) {
             	musicFolders = result;
             	if (musicFolders != null) {
-            		SherlockFragmentActivity activity = (SherlockFragmentActivity) getActivity();
-            		Context context = activity.getSupportActionBar().getThemedContext();
+            		MainActivity activity = getMainActivity();
             		List<CharSequence> musicFolderNames = new ArrayList<CharSequence>(musicFolders.size() + 1);
             		musicFolderNames.add(getString(R.string.select_artist_all_folders));
             		for (MusicFolder folder: musicFolders) {
             			musicFolderNames.add(folder.getName());
             		}
-                    ArrayAdapter<CharSequence> list = new ArrayAdapter<CharSequence>(context, R.layout.sherlock_spinner_item, musicFolderNames);
+                    ArrayAdapter<CharSequence> list = new ArrayAdapter<CharSequence>(activity, R.layout.sherlock_spinner_item, musicFolderNames);
                     list.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
-
-                    activity.getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-                    activity.getSupportActionBar().setListNavigationCallbacks(list, SelectArtistFragment.this);
+                    mMusicFolderSpinner.setAdapter(list);
+                    mMusicFolderSpinner.setOnItemSelectedListener(SelectArtistFragment.this);
 
                     String musicFolderId = Util.getSelectedMusicFolderId(activity);
                     int dropDownId = musicFolderId == null ? 0 : Integer.valueOf(musicFolderId) + 1;
-                    activity.getSupportActionBar().setSelectedNavigationItem(dropDownId);
+                    mMusicFolderSpinner.setSelection(dropDownId);
             	}
                 
             }
@@ -164,13 +145,17 @@ implements ActionBar.OnNavigationListener {
     }
 
     @Override
-    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+    public void onItemSelected(IcsAdapterView<?> parent, View view, int itemPosition, long itemId) {
     	MusicFolder selectedFolder = itemId == 0 ? null : musicFolders.get((int) itemId - 1);
         String musicFolderId = selectedFolder == null ? null : selectedFolder.getId();
         Util.setSelectedMusicFolderId(getActivity(), musicFolderId);
         refresh();
-        return true;
     }
+
+	@Override
+	public void onNothingSelected(IcsAdapterView<?> parent) {
+		// Do nothing...
+	}
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
