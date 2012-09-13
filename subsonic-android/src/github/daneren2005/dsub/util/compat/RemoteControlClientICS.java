@@ -14,15 +14,22 @@ import android.media.RemoteControlClient;
 @TargetApi(14)
 public class RemoteControlClientICS extends RemoteControlClientHelper {
 	
+	private final ImageLoader mImageLoader;
+	
+	protected RemoteControlClientICS(Context context) {
+		super(context);
+		mImageLoader = new ImageLoader(context);
+	}
+
 	private RemoteControlClient mRemoteControl;
 	
-	public void register(final Context context, final ComponentName mediaButtonReceiverComponent) {
-		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+	public void register(final ComponentName mediaButtonReceiverComponent) {
+		AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
 
 		// build the PendingIntent for the remote control client
 		Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
 		mediaButtonIntent.setComponent(mediaButtonReceiverComponent);
-		PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context.getApplicationContext(), 0, mediaButtonIntent, 0);
+		PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(mContext.getApplicationContext(), 0, mediaButtonIntent, 0);
 
 		// create and register the remote control client
 		mRemoteControl = new RemoteControlClient(mediaPendingIntent);
@@ -39,9 +46,9 @@ public class RemoteControlClientICS extends RemoteControlClientHelper {
 				RemoteControlClient.FLAG_KEY_MEDIA_STOP);
 	}
 	
-	public void unregister(final Context context) {
+	public void unregister() {
 		if (mRemoteControl != null) {
-			AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+			AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
 			audioManager.unregisterRemoteControlClient(mRemoteControl);
 		}
 	}
@@ -50,7 +57,7 @@ public class RemoteControlClientICS extends RemoteControlClientHelper {
 		mRemoteControl.setPlaybackState(state);
 	}
 	
-	public void updateMetadata(final Context context, final MusicDirectory.Entry currentSong) {
+	public void updateMetadata(final MusicDirectory.Entry currentSong) {
 		// Update the remote controls
     	mRemoteControl.editMetadata(true)
     	.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, currentSong == null ? null : currentSong.getArtist())
@@ -63,7 +70,7 @@ public class RemoteControlClientICS extends RemoteControlClientHelper {
         	.putBitmap(RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK, null)
         	.apply();
     	} else {
-    		new ImageLoader(context).loadImage(context, mRemoteControl, currentSong);
+    		mImageLoader.loadImage(mContext, mRemoteControl, currentSong);
     	}
 	}
 

@@ -7,15 +7,19 @@ import android.util.Log;
 
 public class RemoteControlClientBase extends RemoteControlClientHelper {
 
-    private static final String TAG = RemoteControlClientBase.class.getSimpleName();
+    protected RemoteControlClientBase(Context context) {
+		super(context);
+	}
+
+	private static final String TAG = RemoteControlClientBase.class.getSimpleName();
 
 	@Override
-	public void register(Context context, ComponentName mediaButtonReceiverComponent) {
+	public void register(ComponentName mediaButtonReceiverComponent) {
 		Log.w(TAG, "RemoteControlClient requires Android API level 14 or higher.");
 	}
 
 	@Override
-	public void unregister(Context context) {
+	public void unregister() {
 		Log.w(TAG, "RemoteControlClient requires Android API level 14 or higher.");
 	}
 
@@ -25,7 +29,7 @@ public class RemoteControlClientBase extends RemoteControlClientHelper {
 	}
 
 	@Override
-	public void updateMetadata(Context context, Entry currentSong) {
+	public void updateMetadata(Entry currentSong) {
 		Log.w(TAG, "RemoteControlClient requires Android API level 14 or higher.");
 	}
 

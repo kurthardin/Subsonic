@@ -7,21 +7,23 @@ import android.os.Build;
 
 public abstract class RemoteControlClientHelper {
 	
-	public static RemoteControlClientHelper createInstance() {
+	protected final Context mContext;
+	
+	public static RemoteControlClientHelper createInstance(Context context) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			return new RemoteControlClientBase();
+			return new RemoteControlClientBase(context);
 		} else {
-			return new RemoteControlClientICS();
+			return new RemoteControlClientICS(context);
 		}
 	}
 	
-	protected RemoteControlClientHelper() {
-		// Avoid instantiation
+	protected RemoteControlClientHelper(Context context) {
+		mContext = context;
 	}
 	
-	public abstract void register(final Context context, final ComponentName mediaButtonReceiverComponent);
-	public abstract void unregister(final Context context);
+	public abstract void register(final ComponentName mediaButtonReceiverComponent);
+	public abstract void unregister();
 	public abstract void setPlaybackState(final int state);
-	public abstract void updateMetadata(final Context context, final MusicDirectory.Entry currentSong);
+	public abstract void updateMetadata(final MusicDirectory.Entry currentSong);
 	
 }

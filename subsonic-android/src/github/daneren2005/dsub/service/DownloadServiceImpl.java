@@ -144,9 +144,9 @@ public class DownloadServiceImpl extends Service implements DownloadService {
 
         if (mRemoteControl == null) {
         	// Use the remote control APIs (if available) to set the playback state
-        	mRemoteControl = RemoteControlClientHelper.createInstance();
+        	mRemoteControl = RemoteControlClientHelper.createInstance(this);
         	ComponentName mediaButtonReceiverComponent = new ComponentName(getPackageName(), MediaButtonIntentReceiver.class.getName());
-        	mRemoteControl.register(this, mediaButtonReceiverComponent);
+        	mRemoteControl.register(mediaButtonReceiverComponent);
         }
 
 		if (equalizerAvailable) {
@@ -192,7 +192,7 @@ public class DownloadServiceImpl extends Service implements DownloadService {
             visualizerController.release();
         }
         if (mRemoteControl != null) {
-        	mRemoteControl.unregister(this);
+        	mRemoteControl.unregister();
         	mRemoteControl = null;
         }
 
@@ -446,7 +446,7 @@ public class DownloadServiceImpl extends Service implements DownloadService {
         }
         
         MusicDirectory.Entry currentSong = currentPlaying == null ? null: currentPlaying.getSong();
-        mRemoteControl.updateMetadata(this, currentSong);
+        mRemoteControl.updateMetadata(currentSong);
         if (mNowPlayingListener != null) {
         	mNowPlayingListener.onCurrentSongChanged(this, currentSong);
         }
