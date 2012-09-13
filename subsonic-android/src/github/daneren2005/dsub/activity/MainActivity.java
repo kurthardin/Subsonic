@@ -306,7 +306,6 @@ implements NowPlayingListener, Exitable, Restartable {
     public void setProgressVisible(boolean visible) {
     	setSupportProgressBarIndeterminateVisibility(visible);
     	MainOptionsMenuHelper.setRefreshVisible(!visible);
-    	invalidateOptionsMenu();
     	if (!visible) {
         	updateProgress(null);
     	}

@@ -312,7 +312,6 @@ public class SubsonicActivity extends SherlockActivity implements Exitable, Rest
     public void setProgressVisible(boolean visible) {
     	setSupportProgressBarIndeterminateVisibility(visible);
     	MainOptionsMenuHelper.setRefreshVisible(!visible);
-    	invalidateOptionsMenu();
     	if (!visible) {
         	updateProgress(null);
     	}

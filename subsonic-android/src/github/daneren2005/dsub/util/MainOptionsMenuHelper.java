@@ -17,34 +17,39 @@ import com.actionbarsherlock.view.MenuItem;
 
 public abstract class MainOptionsMenuHelper {
 	
-	private static View mServerContextView;
-	private static boolean mIsRefreshVisible;
+	private static Menu kCurrentMenu;
+	
+	private static View kServerContextView;
+	private static boolean kIsRefreshVisible;
 	
 	public static void registerForServerContextMenu(Activity activity) {
-        if (mServerContextView == null || !mServerContextView.getContext().equals(activity)) {
-        	if (mServerContextView != null) {
-        		ViewGroup contentView = (ViewGroup) mServerContextView.getParent();
-        		contentView.removeView(mServerContextView);
-        		activity.unregisterForContextMenu(mServerContextView);
+        if (kServerContextView == null || !kServerContextView.getContext().equals(activity)) {
+        	if (kServerContextView != null) {
+        		ViewGroup contentView = (ViewGroup) kServerContextView.getParent();
+        		contentView.removeView(kServerContextView);
+        		activity.unregisterForContextMenu(kServerContextView);
         	}
         	
-        	mServerContextView = new View(activity);
-        	mServerContextView.setVisibility(View.GONE);
-        	activity.registerForContextMenu(mServerContextView);
+        	kServerContextView = new View(activity);
+        	kServerContextView.setVisibility(View.GONE);
+        	activity.registerForContextMenu(kServerContextView);
         	ViewGroup contentView = (ViewGroup) activity.getWindow().getDecorView().findViewById(android.R.id.content);
-        	contentView.addView(mServerContextView, 0);
+        	contentView.addView(kServerContextView, 0);
         }
 	}
 	
     public static boolean onCreateOptionsMenu(MenuInflater inflater, Menu menu) {
         inflater.inflate(R.menu.main, menu);
+        
+        kCurrentMenu = menu;
+        
         return true;
     }
     
     public static boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem refreshItem = menu.findItem(R.id.action_refresh);
         if (refreshItem != null) {
-        	refreshItem.setVisible(mIsRefreshVisible);
+        	refreshItem.setVisible(kIsRefreshVisible);
         }
         return true;
     }
@@ -69,7 +74,7 @@ public abstract class MainOptionsMenuHelper {
 	        	break;
                 
 	        case R.id.menu_server:
-	        	mServerContextView.showContextMenu();
+	        	kServerContextView.showContextMenu();
 	        	break;
 	        	
 	        case R.id.menu_settings:
@@ -89,15 +94,21 @@ public abstract class MainOptionsMenuHelper {
     }
     
     public static boolean isRefreshVisible() {
-    	return mIsRefreshVisible; 
+    	return kIsRefreshVisible; 
     }
     
     public static void setRefreshVisible(boolean visible) {
-    	mIsRefreshVisible = visible;
+    	kIsRefreshVisible = visible;
+    	if (kCurrentMenu != null) {
+    		MenuItem refreshItem = kCurrentMenu.findItem(R.id.action_refresh);
+    		if (refreshItem != null) {
+    			refreshItem.setVisible(kIsRefreshVisible);
+    		}
+    	}
     }
     
     public static View getServerContextMenuPresenter() {
-    	return mServerContextView;
+    	return kServerContextView;
     }
 	
 }
