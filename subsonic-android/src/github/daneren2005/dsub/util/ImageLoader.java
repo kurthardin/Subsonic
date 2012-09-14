@@ -58,7 +58,8 @@ public class ImageLoader implements Runnable {
 
     private static final String TAG = ImageLoader.class.getSimpleName();
     private static final int CONCURRENCY = 5;
-
+    
+    private final Context mContext;
     private final LRUCache<String, Drawable> cache = new LRUCache<String, Drawable>(100);
     private final BlockingQueue<Task> queue;
     private final int imageSizeDefault;
@@ -66,6 +67,7 @@ public class ImageLoader implements Runnable {
     private Drawable largeUnknownImage;
 
     public ImageLoader(Context context) {
+    	mContext = context;
         queue = new LinkedBlockingQueue<Task>(500);
 
         // Determine the density-dependent image sizes.
@@ -85,6 +87,23 @@ public class ImageLoader implements Runnable {
         Bitmap bitmap = Bitmap.createScaledBitmap(drawable.getBitmap(), imageSizeLarge, imageSizeLarge, true);
         bitmap = createReflection(bitmap);
         largeUnknownImage = Util.createDrawableFromBitmap(context, bitmap);
+    }
+    
+    public void loadImage(MusicDirectory.Entry entry, boolean large, ImageLoaderTaskHandler taskHandler) {
+    	if (entry == null || entry.getCoverArt() == null) {
+    		taskHandler.setDrawable(null);
+            taskHandler.run();
+            return;
+        }
+
+        int size = large ? imageSizeLarge : imageSizeDefault;
+        Drawable drawable = cache.get(getKey(entry.getCoverArt(), size));
+        if (drawable != null) {
+        	taskHandler.setDrawable(drawable);
+            taskHandler.run();
+            return;
+        }
+        queue.offer(new Task(mContext, entry, size, large, large, taskHandler));
     }
 
     public void loadImage(View view, MusicDirectory.Entry entry, boolean large, boolean crossfade) {
@@ -304,13 +323,20 @@ public class ImageLoader implements Runnable {
         }
     }
 	
-	private abstract class ImageLoaderTaskHandler implements Runnable {
+	public static abstract class ImageLoaderTaskHandler implements Runnable {
 		
-		protected Drawable mDrawable;
+		private Drawable mDrawable;
 		
-		public void setDrawable(Drawable drawable) {
+		private void setDrawable(Drawable drawable) {
 			mDrawable = drawable;
 		}
+		
+		@Override
+		public void run() {
+			done(mDrawable);
+		}
+		
+		public abstract void done(final Drawable drawable);
 		
 	}
 	
@@ -325,8 +351,8 @@ public class ImageLoader implements Runnable {
 		}
 		
 		@Override
-		public void run() {
-			setImage(mView, mDrawable, mCrossfade);
+		public void done(Drawable drawable) {
+			setImage(mView, drawable, mCrossfade);
 		}
 	}
 	
@@ -339,8 +365,8 @@ public class ImageLoader implements Runnable {
 		}
 		
 		@Override
-		public void run() {
-			setImage(mRemoteControl, mDrawable);
+		public void done(Drawable drawable) {
+			setImage(mRemoteControl, drawable);
 		}
 	}
 	
@@ -353,8 +379,8 @@ public class ImageLoader implements Runnable {
 		}
 		
 		@Override
-		public void run() {
-			setImage(mActionBar, mDrawable);
+		public void done(Drawable drawable) {
+			setImage(mActionBar, drawable);
 		}
 	}
 }
