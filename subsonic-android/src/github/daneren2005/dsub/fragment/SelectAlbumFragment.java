@@ -99,7 +99,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    	return inflater.inflate(R.layout.select_album, container, false);
+    	return inflater.inflate(R.layout.select_album_fragment, container, false);
     }
     
     @Override
@@ -421,9 +421,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
 
                 getMainActivity().warnIfNetworkOrStorageUnavailable();
                 Util.getDownloadService(getActivity()).download(songs, save, autoplay, playNext, shuffle);
-                if (autoplay) {
-                    startActivity(DownloadActivity.class); // TODO: Show 'now playing'
-                } else if (save) {
+                if (save) {
                     Util.toast(getActivity(),
                                getResources().getQuantityString(R.plurals.select_album_n_songs_downloading, songs.size(), songs.size()));
                 } else if (append) {

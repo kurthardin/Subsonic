@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    
+    <style name="Theme.DSub" parent="Theme.Sherlock">
+        <item name="nowPlayingFooterStyle">@style/Widget.DSub.NowPlayingFooter</item>
+    </style>
+    
+    <style name="Theme.DSub.Light" parent="Theme.Sherlock.Light">
+        <item name="nowPlayingFooterStyle">@style/Widget.DSub.NowPlayingFooter.Light</item>
+    </style>
+    
+    <style name="Theme.DSub.Wheat" parent="android:Theme.Light">
+        <item name="android:windowBackground">@color/wheatBackground</item>
+        <item name="android:textColorPrimary">@color/wheatForeground1</item>
+        <item name="android:textColorSecondary">@color/wheatForeground2</item>
+        <item name="android:listViewStyle">@style/Widget.Wheat.ListView</item>
+    </style>
+    
+</resources>

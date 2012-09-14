@@ -41,7 +41,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class SelectPlaylistActivity extends SubsonicActivity 
+public class SelectPlaylistActivity extends SubsonicTabActivity 
 implements AdapterView.OnItemClickListener, Refreshable {
 
     private static final int MENU_ITEM_PLAY_ALL = 1;

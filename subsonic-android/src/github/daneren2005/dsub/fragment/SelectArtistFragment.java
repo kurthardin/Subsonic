@@ -184,7 +184,6 @@ implements OnItemSelectedListener {
 	        	return true;
 	        	
 	        case R.id.action_shuffle:
-// TODO: Play shuffled and show 'now playing'
 	        	Intent intent = new Intent(getActivity(), DownloadActivity.class);
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
                 startActivity(intent);

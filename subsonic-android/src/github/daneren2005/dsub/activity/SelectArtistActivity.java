@@ -48,7 +48,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class SelectArtistActivity extends SubsonicActivity 
+public class SelectArtistActivity extends SubsonicTabActivity 
 implements AdapterView.OnItemClickListener, ActionBar.OnNavigationListener, Refreshable {
 
     private ListView artistList;
@@ -173,7 +173,7 @@ implements AdapterView.OnItemClickListener, ActionBar.OnNavigationListener, Refr
 	        case R.id.action_shuffle:
 	        	Intent intent = new Intent(SelectArtistActivity.this, DownloadActivity.class);
                 intent.putExtra(Constants.INTENT_EXTRA_NAME_SHUFFLE, true);
-//                showTabActivity(DownloadActivity.class, intent); // TODO: Show 'now playing'
+                startActivity(intent);
                 return true;
 
         }

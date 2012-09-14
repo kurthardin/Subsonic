@@ -18,13 +18,85 @@
  */
 package github.daneren2005.dsub.activity;
 
-import com.actionbarsherlock.app.SherlockActivity;
+import github.daneren2005.dsub.R;
+import github.daneren2005.dsub.service.DownloadServiceImpl;
+import github.daneren2005.dsub.util.NowPlayingHelper;
+import github.daneren2005.dsub.util.SimpleServiceBinder;
+import github.daneren2005.dsub.view.NowPlayingView;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
 
 /**
- * @author Sindre Mehus
+ * @author Kurt Hardin
  */
-public abstract class SubsonicTabActivity extends SherlockActivity {//implements IDrawerCallbacks {
+public abstract class SubsonicTabActivity extends SubsonicActivity {
+	
+	protected DownloadServiceImpl mDownloadService;
 
+	private final ServiceConnection mConnection = new ServiceConnection() {
+		@SuppressWarnings("unchecked")
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			mDownloadService = ((SimpleServiceBinder<DownloadServiceImpl>) service).getService();
+			NowPlayingHelper.onResume(mDownloadService, getNowPlayingView());
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			mDownloadService = null;
+			if (getNowPlayingView() != null) {
+				getNowPlayingView().onCurrentSongChanged(null, null);
+			}
+		}
+	};
+	
+	private NowPlayingView mNowPlayingView;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		// bind to our database using our Service Connection
+		Intent serviceIntent = new Intent(this, DownloadServiceImpl.class);
+		bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		NowPlayingHelper.onResume(mDownloadService, getNowPlayingView());
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		NowPlayingHelper.onPause(mDownloadService);
+	}
+	
+	@Override
+	public void onDestroy() {
+		unbindService(mConnection);
+		mDownloadService = null;
+		super.onDestroy();
+	}
+	
+	private NowPlayingView getNowPlayingView() {
+		if (mNowPlayingView == null) {
+			mNowPlayingView = (NowPlayingView) findViewById(R.id.now_playing_view);
+		}
+		return mNowPlayingView;
+	}
+
+}
+
+// Previous implementation...
+///**
+// * @author Sindre Mehus
+// */
+//public abstract class SubsonicTabActivity extends SubsonicActivity implements IDrawerCallbacks {
+//
 //    private static final String TAG = SubsonicTabActivity.class.getSimpleName();
 //    private static ImageLoader IMAGE_LOADER;
 //
@@ -569,5 +641,5 @@ public abstract class SubsonicTabActivity extends SherlockActivity {//implements
 //		}
 //    	
 //    }
-}
+//}
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="DSubTheme" parent="SherlockTheme">
+
+        <!-- Default style for now playing footer -->
+        <attr name="nowPlayingFooterStyle" format="reference" />
+    </declare-styleable>
+
+</resources>

@@ -21,7 +21,6 @@ package github.daneren2005.dsub.activity;
 
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.domain.MusicDirectory;
-import github.daneren2005.dsub.domain.MusicDirectory.Entry;
 import github.daneren2005.dsub.fragment.SelectAlbumFragment;
 import github.daneren2005.dsub.fragment.SelectAlbumFragment.AlbumListType;
 import github.daneren2005.dsub.fragment.SelectArtistFragment;
@@ -29,47 +28,46 @@ import github.daneren2005.dsub.fragment.SelectPlaylistFragment;
 import github.daneren2005.dsub.fragment.SubsonicTabFragment;
 import github.daneren2005.dsub.interfaces.Exitable;
 import github.daneren2005.dsub.interfaces.Restartable;
-import github.daneren2005.dsub.service.DownloadFile;
 import github.daneren2005.dsub.service.DownloadService;
-import github.daneren2005.dsub.service.DownloadService.NowPlayingListener;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
-import github.daneren2005.dsub.util.BackgroundTask;
 import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.FileUtil;
 import github.daneren2005.dsub.util.ImageLoader;
 import github.daneren2005.dsub.util.MainOptionsMenuHelper;
 import github.daneren2005.dsub.util.ModalBackgroundTask;
+import github.daneren2005.dsub.util.NowPlayingHelper;
 import github.daneren2005.dsub.util.SelectServerHelper;
-import github.daneren2005.dsub.util.TabActivityBackgroundTask;
+import github.daneren2005.dsub.util.SimpleServiceBinder;
 import github.daneren2005.dsub.util.Util;
+import github.daneren2005.dsub.view.NowPlayingView;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.media.AudioManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.test.PerformanceTestCase;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.Window;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -77,15 +75,32 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
 public class MainActivity extends SherlockFragmentActivity 
-implements NowPlayingListener, Exitable, Restartable {
+implements Exitable, Restartable {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
     private static ImageLoader IMAGE_LOADER;
     
+    protected DownloadServiceImpl mDownloadService;
+
+	private final ServiceConnection mConnection = new ServiceConnection() {
+		@SuppressWarnings("unchecked")
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			mDownloadService = ((SimpleServiceBinder<DownloadServiceImpl>) service).getService();
+			NowPlayingHelper.onResume(mDownloadService, getNowPlayingView());
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			mDownloadService = null;
+			if (getNowPlayingView() != null) {
+				getNowPlayingView().onCurrentSongChanged(null, null);
+			}
+		}
+	};
+	
+	private NowPlayingView mNowPlayingView;
+    
     private MainActivityPagerAdapter mPagerAdapter;
     private ViewPager mViewPager;
-    
-    private View mNowPlayingView;
 
     private boolean destroyed;
 
@@ -95,6 +110,7 @@ implements NowPlayingListener, Exitable, Restartable {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+    	
         setUncaughtExceptionHandler();
         applyTheme();
         super.onCreate(savedInstanceState);
@@ -102,26 +118,10 @@ implements NowPlayingListener, Exitable, Restartable {
         setContentView(R.layout.main);
         
         startService(new Intent(this, DownloadServiceImpl.class));
+		// bind to our database using our Service Connection
+		Intent serviceIntent = new Intent(this, DownloadServiceImpl.class);
+		bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        
-        new AsyncTask<Integer, Integer, DownloadService>() {
-
-			@Override
-			protected DownloadService doInBackground(Integer... params) {
-				DownloadService service;
-		        do {
-		        	service = Util.getDownloadService(MainActivity.this);
-		        } while (service == null);
-				return service;
-			}
-
-			protected void onPostExecute(DownloadService result) {
-				result.setNowPlayListener(MainActivity.this);
-				DownloadFile currentFile = result.getCurrentPlaying();
-				onCurrentSongChanged(result, currentFile == null ? null : currentFile.getSong());
-			}
-
-		}.execute();
      
         mPagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -133,13 +133,6 @@ implements NowPlayingListener, Exitable, Restartable {
         	}
         });
         
-        mNowPlayingView = findViewById(R.id.now_playing_view);
-        mNowPlayingView.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				startActivity(new Intent(MainActivity.this, DownloadActivity.class));
-			}
-		});
         if (savedInstanceState == null) {
         	int position = Util.isOffline(this) ? 0 : 2;
         	if (position == mViewPager.getCurrentItem()) {
@@ -197,6 +190,7 @@ implements NowPlayingListener, Exitable, Restartable {
         Util.registerMediaButtonEventReceiver(this);
         
         MainOptionsMenuHelper.registerForServerContextMenu(this);
+        NowPlayingHelper.onResume(mDownloadService, getNowPlayingView());
     }
 
     @Override
@@ -212,32 +206,36 @@ implements NowPlayingListener, Exitable, Restartable {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return MainOptionsMenuHelper.onOptionsItemSelected(this, item);
+    	return MainOptionsMenuHelper.onOptionsItemSelected(this, item);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
+    	super.onCreateContextMenu(menu, view, menuInfo);
+    	SelectServerHelper.onCreateContextMenu(this, menu, view, menuInfo);
+    }
+
+    @Override
+    public boolean onContextItemSelected(android.view.MenuItem menuItem) {
+    	if (SelectServerHelper.onContextItemSelected(this, menuItem)) {
+    		return true;
+    	}
+    	return super.onContextItemSelected(menuItem);
     }
     
     @Override
-  public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
-      super.onCreateContextMenu(menu, view, menuInfo);
-      SelectServerHelper.onCreateContextMenu(this, menu, view, menuInfo);
-  }
-
-  @Override
-  public boolean onContextItemSelected(android.view.MenuItem menuItem) {
-	  if (SelectServerHelper.onContextItemSelected(this, menuItem)) {
-		  return true;
-	  }
-	  return super.onContextItemSelected(menuItem);
-  }
+    protected void onPause() {
+    	super.onPause();
+    	NowPlayingHelper.onPause(mDownloadService);
+    }
 
     @Override
     protected void onDestroy() {
+		unbindService(mConnection);
+		mDownloadService = null;
         super.onDestroy();
         destroyed = true;
         getImageLoader().clear();
-        DownloadService service = Util.getDownloadService(this);
-        if (service != null) {
-        	service.setNowPlayListener(null);
-        }
     }
 
 
@@ -286,7 +284,7 @@ implements NowPlayingListener, Exitable, Restartable {
 //            setTheme(R.style.Theme_Dark);
 //        } else 
         if ("light".equals(theme)) {
-            setTheme(R.style.Theme_Sherlock_Light);
+            setTheme(R.style.Theme_DSub_Light);
         }
     }
 
@@ -304,6 +302,13 @@ implements NowPlayingListener, Exitable, Restartable {
     public boolean isDestroyed() {
         return destroyed;
     }
+	
+	private NowPlayingView getNowPlayingView() {
+		if (mNowPlayingView == null) {
+			mNowPlayingView = (NowPlayingView) findViewById(R.id.now_playing_view);
+		}
+		return mNowPlayingView;
+	}
 
     public void setProgressVisible(boolean visible) {
     	setSupportProgressBarIndeterminateVisibility(visible);
@@ -372,7 +377,6 @@ implements NowPlayingListener, Exitable, Restartable {
                     }
                     warnIfNetworkOrStorageUnavailable();
                     downloadService.download(songs, save, autoplay, false, shuffle);
-//                    showTabActivity(DownloadActivity.class); // TODO: Switch to 'now playing'
                 }
             }
         };
@@ -491,7 +495,6 @@ implements NowPlayingListener, Exitable, Restartable {
     			}
     		}
     		
-//    		TODO: Put other arguments?
     		if (fragment != null) {
     			fragment.setArguments(args);
     		}
@@ -509,18 +512,9 @@ implements NowPlayingListener, Exitable, Restartable {
     		return Util.isOffline(MainActivity.this) ? offlineTitle : titles[position];
     	}
     }
-
-	@Override
-	public void onCurrentSongChanged(DownloadService service, Entry song) {
-		if (song == null) {
-			mNowPlayingView.setVisibility(View.GONE);
-		} else {
-			mNowPlayingView.setVisibility(View.VISIBLE);
-		}
-	}
 }
 
-// TODO: Previous implementation
+// Previous implementation
 //public class MainActivity extends SubsonicTabActivity {
 //
 //    private static final int MENU_GROUP_SERVER = 10;

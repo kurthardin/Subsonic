@@ -52,7 +52,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class SelectAlbumActivity extends SubsonicActivity implements Refreshable {
+public class SelectAlbumActivity extends SubsonicTabActivity implements Refreshable {
 
     private static final String TAG = SelectAlbumActivity.class.getSimpleName();
 
@@ -85,7 +85,7 @@ public class SelectAlbumActivity extends SubsonicActivity implements Refreshable
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.select_album);
+        setContentView(R.layout.select_album_activity);
         
         entryList = new ArrayList<MusicDirectory.Entry>();
         mEntryListView = (ListView) findViewById(android.R.id.list);
@@ -461,9 +461,7 @@ public class SelectAlbumActivity extends SubsonicActivity implements Refreshable
                 if (mPlaylistFetchName != null) {
                     Util.getDownloadService(SelectAlbumActivity.this).setSuggestedPlaylistName(mPlaylistFetchName);
                 }
-                if (autoplay) {
-//                    showTabActivity(DownloadActivity.class); // TODO Show 'now playing'
-                } else if (save) {
+                if (save) {
                     Util.toast(SelectAlbumActivity.this,
                                getResources().getQuantityString(R.plurals.select_album_n_songs_downloading, songs.size(), songs.size()));
                 } else if (append) {

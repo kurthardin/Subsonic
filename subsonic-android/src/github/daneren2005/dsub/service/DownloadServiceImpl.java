@@ -209,7 +209,7 @@ public class DownloadServiceImpl extends Service implements DownloadService {
     }
     
     @Override
-    public void setNowPlayListener(NowPlayingListener listener) {
+    public void setNowPlayingListener(NowPlayingListener listener) {
     	mNowPlayingListener = listener;
     }
 
@@ -672,6 +672,9 @@ public class DownloadServiceImpl extends Service implements DownloadService {
 
         this.playerState = playerState;
         mRemoteControl.setPlaybackState(playerState.getRemoteControlClientPlayState());
+        if (mNowPlayingListener != null) {
+        	mNowPlayingListener.onPlaybackStateChanged(this, playerState);
+        }
         
         if (show) {
             Util.showPlayingNotification(this, this, handler, currentPlaying.getSong());

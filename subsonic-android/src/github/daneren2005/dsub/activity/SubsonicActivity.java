@@ -176,14 +176,11 @@ public class SubsonicActivity extends SherlockActivity implements Exitable, Rest
 //            setTheme(R.style.Theme_Dark);
 //        } else 
         if ("light".equals(theme)) {
-            setTheme(R.style.Theme_Sherlock_Light);
+            setTheme(R.style.Theme_DSub_Light);
         }
     }
 
     public void restart() {
-//    	Intent intent = new Intent(getIntent());
-//    	intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//    	Util.startActivityWithoutTransition(this, intent);
     	returnHome(false);
     }
 
@@ -270,7 +267,6 @@ public class SubsonicActivity extends SherlockActivity implements Exitable, Rest
                     }
                     warnIfNetworkOrStorageUnavailable();
                     downloadService.download(songs, save, autoplay, false, shuffle);
-//                    showTabActivity(DownloadActivity.class); // TODO: Show 'now playing'
                 }
             }
         };

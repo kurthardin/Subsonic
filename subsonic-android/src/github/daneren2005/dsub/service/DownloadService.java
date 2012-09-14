@@ -32,7 +32,7 @@ import github.daneren2005.dsub.domain.RepeatMode;
  */
 public interface DownloadService {
 	
-	public void setNowPlayListener(NowPlayingListener listener);
+	public void setNowPlayingListener(NowPlayingListener listener);
 	
     void download(List<MusicDirectory.Entry> songs, boolean save, boolean autoplay, boolean playNext, boolean shuffle);
 	void downloadBackground(List<MusicDirectory.Entry> songs, boolean save);
@@ -115,6 +115,7 @@ public interface DownloadService {
     
     public static interface NowPlayingListener {
     	public void onCurrentSongChanged(DownloadService service, MusicDirectory.Entry song);
+    	public void onPlaybackStateChanged(DownloadService service, PlayerState state);
     }
     
 }

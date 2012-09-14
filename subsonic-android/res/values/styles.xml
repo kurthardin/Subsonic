@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     
+    <style name="Widget.DSub.NowPlayingFooter" parent="Widget">
+        <item name="android:background">@drawable/now_playing_background_dark</item>
+    </style>
     
-    <!-- Themes -->
-    
-    <style name="Theme.Wheat" parent="android:Theme.Light">
-        <item name="android:windowBackground">@color/wheatBackground</item>
-        <item name="android:textColorPrimary">@color/wheatForeground1</item>
-        <item name="android:textColorSecondary">@color/wheatForeground2</item>
-        <item name="android:listViewStyle">@style/Widget.Wheat.ListView</item>
+    <style name="Widget.DSub.NowPlayingFooter.Light" parent="Widget">
+        <item name="android:background">@drawable/now_playing_background_light</item>
     </style>
 
     <style name="Widget.Wheat.ListView" parent="android:style/Widget.ListView.White">
