@@ -132,12 +132,6 @@ implements NowPlayingListener, Exitable, Restartable {
         		notifyFragmentOnPageSelected(position);
         	}
         });
-        int position = Util.isOffline(this) ? 0 : 2;
-        if (position == mViewPager.getCurrentItem()) {
-        	notifyFragmentOnPageSelected(position);
-        } else {
-        	mViewPager.setCurrentItem(position);
-        }
         
         mNowPlayingView = findViewById(R.id.now_playing_view);
         mNowPlayingView.setOnClickListener(new OnClickListener() {
@@ -146,6 +140,14 @@ implements NowPlayingListener, Exitable, Restartable {
 				startActivity(new Intent(MainActivity.this, DownloadActivity.class));
 			}
 		});
+        if (savedInstanceState == null) {
+        	int position = Util.isOffline(this) ? 0 : 2;
+        	if (position == mViewPager.getCurrentItem()) {
+        		notifyFragmentOnPageSelected(position);
+        	} else {
+        		mViewPager.setCurrentItem(position);
+        	}
+        }
         
         handleExtras(getIntent());
     }
