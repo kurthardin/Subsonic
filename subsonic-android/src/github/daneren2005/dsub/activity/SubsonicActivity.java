@@ -183,44 +183,6 @@ public class SubsonicActivity extends SherlockActivity implements Exitable, Rest
             setTheme(R.style.Theme_DSub_Light);
         }
     }
-	
-    public void toggleStarredInBackground(final MusicDirectory.Entry entry, final ImageButton button) {
-        
-    	final boolean starred = !entry.isStarred();
-    	
-    	button.setImageResource(starred ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
-    	entry.setStarred(starred);
-    	
-        //        Util.toast(SubsonicTabActivity.this, getResources().getString(R.string.starring_content, entry.getTitle()));
-        new SilentBackgroundTask<Void>(this) {
-            @Override
-            protected Void doInBackground() throws Throwable {
-                MusicService musicService = MusicServiceFactory.getMusicService(SubsonicActivity.this);
-				musicService.setStarred(entry.getId(), starred, SubsonicActivity.this, null);
-                return null;
-            }
-            
-            @Override
-            protected void done(Void result) {
-                //                Util.toast(SubsonicTabActivity.this, getResources().getString(R.string.starring_content_done, entry.getTitle()));
-            }
-            
-            @Override
-            protected void error(Throwable error) {
-            	button.setImageResource(!starred ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
-            	entry.setStarred(!starred);
-            	
-            	String msg;
-            	if (error instanceof OfflineException || error instanceof ServerTooOldException) {
-            		msg = getErrorMessage(error);
-            	} else {
-            		msg = getResources().getString(R.string.starring_content_error, entry.getTitle()) + " " + getErrorMessage(error);
-            	}
-            	
-        		Util.toast(SubsonicActivity.this, msg, false);
-            }
-        }.execute();
-    }
 
     public void restart() {
     	returnHome(false);

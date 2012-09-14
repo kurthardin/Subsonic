@@ -18,6 +18,7 @@
  */
 package github.daneren2005.dsub.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +26,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.activity.SubsonicTabActivity;
 import github.daneren2005.dsub.domain.MusicDirectory;
 
 /**
@@ -54,8 +54,7 @@ public class AlbumView extends LinearLayout {
         starButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				SubsonicTabActivity activity = (SubsonicTabActivity) getContext();
-				activity.toggleStarredInBackground(album, starButton);
+				StarringHelper.toggleStarredInBackground((Activity) getContext(), album, starButton);
 			}
 		});
     }

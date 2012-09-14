@@ -18,6 +18,7 @@
  */
 package github.daneren2005.dsub.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
@@ -29,7 +30,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.activity.SubsonicTabActivity;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
@@ -72,8 +72,7 @@ public class SongView extends LinearLayout implements Checkable {
         starButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				SubsonicTabActivity activity = (SubsonicTabActivity) getContext();
-				activity.toggleStarredInBackground(song, starButton);
+				StarringHelper.toggleStarredInBackground((Activity) getContext(), song, starButton);
 			}
 		});
 

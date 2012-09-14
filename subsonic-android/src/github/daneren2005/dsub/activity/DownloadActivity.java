@@ -68,6 +68,7 @@ import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.HorizontalSlider;
 import github.daneren2005.dsub.util.SilentBackgroundTask;
 import github.daneren2005.dsub.util.SongView;
+import github.daneren2005.dsub.util.StarringHelper;
 import github.daneren2005.dsub.util.Util;
 import github.daneren2005.dsub.view.VisualizerView;
 
@@ -164,7 +165,7 @@ public class DownloadActivity extends SubsonicActivity implements OnGestureListe
 				DownloadFile currentDownload = Util.getDownloadService(DownloadActivity.this).getCurrentPlaying();
 				if (currentDownload != null) {
 					MusicDirectory.Entry currentSong = currentDownload.getSong();
-					toggleStarredInBackground(currentSong, starButton);
+					StarringHelper.toggleStarredInBackground(DownloadActivity.this, currentSong, starButton);
 				}
 			}
 		});
