@@ -18,7 +18,7 @@
         android:layout_gravity="center_vertical"
         android:layout_weight="1.0"
         android:orientation="vertical"
-        android:paddingLeft="11.0dip" >
+        android:paddingLeft="15.0dip" >
 
         <TextView
             android:id="@+id/now_playing_title"
@@ -26,8 +26,11 @@
             android:layout_height="wrap_content"
             android:layout_gravity="left"
             android:ellipsize="marquee"
-            android:focusable="true"
-            android:singleLine="true" />
+            android:focusable="false"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
             android:id="@+id/now_playing_artist"
@@ -36,7 +39,9 @@
             android:layout_gravity="left"
             android:ellipsize="end"
             android:scrollHorizontally="true"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <TextView
             android:id="@+id/now_playing_album"
@@ -45,7 +50,9 @@
             android:layout_gravity="left"
             android:ellipsize="end"
             android:scrollHorizontally="true"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textColor="?android:attr/textColorSecondary" />
     </LinearLayout>
 
     <ImageButton

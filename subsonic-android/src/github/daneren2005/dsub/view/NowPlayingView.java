@@ -56,6 +56,7 @@ public class NowPlayingView extends LinearLayout implements NowPlayingListener {
 		
         mAlbumArt = (ImageView) nowPlayingView.findViewById(R.id.now_playing_image);
         mTitle = (TextView) nowPlayingView.findViewById(R.id.now_playing_title);
+        mTitle.setSelected(true);
         mAlbum = (TextView) nowPlayingView.findViewById(R.id.now_playing_album);
         mArtist = (TextView) nowPlayingView.findViewById(R.id.now_playing_artist);
         
