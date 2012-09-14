@@ -437,6 +437,7 @@ implements Exitable, Restartable {
     			"New", 
     			"Recent", 
     			"Artists", 
+    			"Starred",
     			getString(R.string.main_albums_highest),
     			getString(R.string.main_albums_frequent),
     			getString(R.string.main_albums_random),
@@ -470,23 +471,28 @@ implements Exitable, Restartable {
 					case 2:
 						fragment = new SelectArtistFragment();
 						break;
-
+						
 					case 3:
 						fragment = new SelectAlbumFragment();
-						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.HIGHEST.ordinal());
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.STARRED.ordinal());
 						break;
 
 					case 4:
 						fragment = new SelectAlbumFragment();
-						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.FREQUENT.ordinal());
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.HIGHEST.ordinal());
 						break;
 
 					case 5:
 						fragment = new SelectAlbumFragment();
-						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.RANDOM.ordinal());
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.FREQUENT.ordinal());
 						break;
 
 					case 6:
+						fragment = new SelectAlbumFragment();
+						args.putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.RANDOM.ordinal());
+						break;
+
+					case 7:
 						fragment = new SelectPlaylistFragment();
 						break;
 
@@ -504,7 +510,7 @@ implements Exitable, Restartable {
 
     	@Override
     	public int getCount() {
-    		return Util.isOffline(MainActivity.this) ? 1 : 7;
+    		return Util.isOffline(MainActivity.this) ? 1 : 8;
     	}
 
     	@Override

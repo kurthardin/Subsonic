@@ -607,7 +607,8 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     	HIGHEST("highest"), 
     	NEWEST("newest"), 
     	RANDOM("random"), 
-    	RECENT("recent");
+    	RECENT("recent"),
+    	STARRED("starred");
     	
     	private final String mName;
     	
