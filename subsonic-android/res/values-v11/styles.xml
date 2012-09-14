@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     
-    
-    <!-- Dashboard styles -->
-    <style name="Dashboard.Spinner" parent="@android:style/Widget.Holo.Spinner">
-        <item name="android:layout_marginTop">10dip</item>
-        <item name="android:layout_marginBottom">10dip</item>
-    </style>
-    
-    <style name="Dashboard.SpinnerDropDownItem" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
-        <item name="android:textAppearance">@style/Dashboard.TextAppearance</item>
-    </style>
-    
-    <style name="Dashboard.SpinnerItem" parent="@android:style/Widget.Holo.TextView.SpinnerItem">
-        <item name="android:textAppearance">@style/Dashboard.TextAppearance</item>
-    </style>
-    
-    
     <!-- Themes -->
     <style name="Theme.Wheat" parent="android:Theme.Holo.Light">
         <item name="android:windowBackground">@color/wheatBackground</item>

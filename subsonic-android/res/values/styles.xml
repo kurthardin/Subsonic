@@ -2,42 +2,6 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     
     
-    <!-- Dashboard styles -->
-    
-    <style name="Dashboard.TextAppearance" parent="@android:style/TextAppearance.Medium">
-        <item name="android:textColor">@color/dashboard_text</item>
-    </style>
-    
-    <style name="Dashboard.Spinner" parent="@android:style/Widget.Spinner">
-        <item name="android:layout_marginTop">10dip</item>
-        <item name="android:layout_marginBottom">10dip</item>
-    </style>
-    
-    <style name="Dashboard.SpinnerDropDownItem" parent="@android:style/Widget.DropDownItem.Spinner">
-        <item name="android:textAppearance">@style/Dashboard.TextAppearance</item>
-    </style>
-    
-    <style name="Dashboard.SpinnerItem" parent="@android:style/Widget.TextView.SpinnerItem">
-        <item name="android:textAppearance">@style/Dashboard.TextAppearance</item>
-    </style>
-    
-    <style name="Dashboard.ListSeparator" parent="@android:attr/listSeparatorTextViewStyle">
-        <item name="android:background">@color/dashboard_separator</item>
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">1dip</item>
-        <item name="android:gravity">center_horizontal</item>
-        <item name="android:layout_marginTop">10dip</item>
-        <item name="android:layout_marginBottom">10dip</item>
-        <item name="android:layout_marginLeft">5dip</item>
-        <item name="android:layout_marginRight">5dip</item>
-    </style>
-    
-    <style name="Dashboard.ListItem" parent="@style/Dashboard.TextAppearance">
-        <item name="android:layout_marginTop">10dip</item>
-        <item name="android:layout_marginBottom">10dip</item>
-    </style>
-    
-    
     <!-- Themes -->
     
     <style name="Theme.Wheat" parent="android:Theme.Light">
