@@ -39,7 +39,7 @@ import android.view.KeyEvent;
 import android.widget.RemoteViews;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.activity.DownloadActivity;
-import github.daneren2005.dsub.activity.SelectArtistActivity;
+import github.daneren2005.dsub.activity.MainActivity;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
@@ -211,7 +211,7 @@ public class DSubWidgetProvider extends AppWidgetProvider {
      */
     private void linkButtons(Context context, RemoteViews views, boolean playerActive) {
 
-        Intent intent = new Intent(context, playerActive ? DownloadActivity.class : SelectArtistActivity.class);
+        Intent intent = new Intent(context, playerActive ? DownloadActivity.class : MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
         views.setOnClickPendingIntent(R.id.appwidget_coverart, pendingIntent);
         views.setOnClickPendingIntent(R.id.appwidget_top, pendingIntent);
