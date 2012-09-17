@@ -73,9 +73,14 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     private AlbumListType mAlbumListType;
     private int mAlbumListDefaultFetchSize;
     private int mAlbumListDefaultFetchOffset;
-    
     private int mAlbumListFetchSize;
     private int mAlbumListFetchOffset;
+
+    private String mMusicDirectoryFetchId;
+    private String mMusicDirectoryFetchName;
+
+    private String mPlaylistFetchId;
+    private String mPlaylistFetchName;
     
     private boolean mResetScrollPosition;
 
@@ -88,12 +93,16 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
 
         Bundle args = getArguments();
         if (args != null) {
-        	mAlbumListType = AlbumListType.values()[args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE)];
-        	if (mAlbumListType == null) {
-        		throw new IllegalArgumentException("Must specify AlbumListType for SelectAlbumFragment in its arguments Bundle with putInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, AlbumListType.TYPE.ordinal()");
+        	int albumListTypeIndex = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE, -1);
+        	if (albumListTypeIndex > -1 && albumListTypeIndex < AlbumListType.values().length) {
+        		mAlbumListType = AlbumListType.values()[albumListTypeIndex];
         	}
         	mAlbumListDefaultFetchSize = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_SIZE, 20);
         	mAlbumListDefaultFetchOffset = args.getInt(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_OFFSET, 0);
+            mMusicDirectoryFetchId = args.getString(Constants.INTENT_EXTRA_NAME_ID);
+            mMusicDirectoryFetchName = args.getString(Constants.INTENT_EXTRA_NAME_NAME);
+            mPlaylistFetchId = args.getString(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID);
+            mPlaylistFetchName = args.getString(Constants.INTENT_EXTRA_NAME_PLAYLIST_NAME);
         }
         
     }
@@ -196,28 +205,34 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
         
     	mAlbumListFetchSize = mAlbumListDefaultFetchSize;
     	mAlbumListFetchOffset = mAlbumListDefaultFetchOffset;
-        
-        getAlbumList(mAlbumListType.getName(), mAlbumListFetchSize, mAlbumListFetchOffset);
+    	
+    	if (mPlaylistFetchId != null) {
+            getPlaylist(mPlaylistFetchId, mPlaylistFetchName);
+        } else if (mAlbumListType != null) {
+        	getAlbumList(mAlbumListType.getName(), mAlbumListFetchSize, mAlbumListFetchOffset);
+        } else {
+            getMusicDirectory(mMusicDirectoryFetchId, mMusicDirectoryFetchName);
+        }
     }
 
     private void playAll(final boolean shuffle) {
-//    	ListView entryListView = getListView();
-//        boolean hasSubFolders = false;
-//        for (int i = 0; i < entryListView.getCount(); i++) {
-//            MusicDirectory.Entry entry = (MusicDirectory.Entry) entryListView.getItemAtPosition(i);
-//            if (entry != null && entry.isDirectory()) {
-//                hasSubFolders = true;
-//                break;
-//            }
-//        }
+    	ListView entryListView = getListView();
+        boolean hasSubFolders = false;
+        for (int i = 0; i < entryListView.getCount(); i++) {
+            MusicDirectory.Entry entry = (MusicDirectory.Entry) entryListView.getItemAtPosition(i);
+            if (entry != null && entry.isDirectory()) {
+                hasSubFolders = true;
+                break;
+            }
+        }
 
-//        if (hasSubFolders && mMusicDirectoryFetchId != null) {
-//            getMainActivity().downloadRecursively(mMusicDirectoryFetchId, false, false, true, shuffle);
-//        } else {
+        if (hasSubFolders && mMusicDirectoryFetchId != null) {
+            getTabActivity().downloadRecursively(mMusicDirectoryFetchId, false, false, true, shuffle);
+        } else {
             selectAll(true, false);
             download(false, false, true, false, shuffle);
             selectAll(false, false);
-//        }
+        }
     }
 
     @Override
@@ -270,16 +285,16 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     		songs.add(entry);
     		switch (menuItem.getItemId()) {
     		case R.id.album_menu_play_now:
-    			getMainActivity().downloadRecursively(entry.getId(), false, false, true, false);
+    			getTabActivity().downloadRecursively(entry.getId(), false, false, true, false);
     			break;
     		case R.id.album_menu_play_shuffled:
-    			getMainActivity().downloadRecursively(entry.getId(), false, false, true, true);
+    			getTabActivity().downloadRecursively(entry.getId(), false, false, true, true);
     			break;
     		case R.id.album_menu_play_last:
-    			getMainActivity().downloadRecursively(entry.getId(), false, true, false, false);
+    			getTabActivity().downloadRecursively(entry.getId(), false, true, false, false);
     			break;
     		case R.id.album_menu_pin:
-    			getMainActivity().downloadRecursively(entry.getId(), true, true, false, false);
+    			getTabActivity().downloadRecursively(entry.getId(), true, true, false, false);
     			break;
     		case R.id.song_menu_play_now:
     			Util.getDownloadService(getActivity()).download(songs, false, true, true, false);
@@ -325,6 +340,33 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
                     });
                 }
                 super.done(result);
+            }
+        }.execute();
+    }
+
+    private void getMusicDirectory(final String id, String name) {
+        getActivity().setTitle(name);
+
+        new LoadTask() {
+            @Override
+            protected MusicDirectory load(MusicService service) throws Exception {
+            	boolean refresh = false;
+            	Bundle args = getArguments();
+                if (args != null) {
+                	refresh = args.getBoolean(Constants.INTENT_EXTRA_NAME_REFRESH, false);
+                }
+                return service.getMusicDirectory(id, refresh, getActivity(), this);
+            }
+        }.execute();
+    }
+
+    private void getPlaylist(final String playlistId, final String playlistName) {
+        getActivity().setTitle(playlistName);
+
+        new LoadTask() {
+            @Override
+            protected MusicDirectory load(MusicService service) throws Exception {
+                return service.getPlaylist(playlistId, playlistName, getActivity(), this);
             }
         }.execute();
     }
@@ -417,8 +459,11 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
                 	Util.getDownloadService(getActivity()).clear();
                 }
 
-                getMainActivity().warnIfNetworkOrStorageUnavailable();
+                getTabActivity().warnIfNetworkOrStorageUnavailable();
                 Util.getDownloadService(getActivity()).download(songs, save, autoplay, playNext, shuffle);
+                if (mPlaylistFetchName != null) {
+                    Util.getDownloadService(getActivity()).setSuggestedPlaylistName(mPlaylistFetchName);
+                }
                 if (save) {
                     Util.toast(getActivity(),
                                getResources().getQuantityString(R.plurals.select_album_n_songs_downloading, songs.size(), songs.size()));
@@ -527,7 +572,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
             
             final EntryAdapter entryListAdapter;
             if (getListAdapter() == null) {
-            	entryListAdapter = new EntryAdapter(getActivity(), getMainActivity().getImageLoader(), entries, true);
+            	entryListAdapter = new EntryAdapter(getActivity(), getTabActivity().getImageLoader(), entries, true);
             	setListAdapter(entryListAdapter);
             } else {
             	ListAdapter listAdapter = getListAdapter();

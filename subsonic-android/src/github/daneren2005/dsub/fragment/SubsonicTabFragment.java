@@ -19,7 +19,7 @@
 package github.daneren2005.dsub.fragment;
 
 import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.activity.MainActivity;
+import github.daneren2005.dsub.activity.SubsonicTabActivity;
 import github.daneren2005.dsub.interfaces.Refreshable;
 import github.daneren2005.dsub.util.Util;
 import android.app.Activity;
@@ -48,9 +48,9 @@ public abstract class SubsonicTabFragment extends SherlockListFragment implement
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		MainActivity mainActivity = getMainActivity();
-    	mainActivity.setTitle(R.string.common_appname);
-		mainActivity.getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		SubsonicTabActivity tabActivity = getTabActivity();
+    	tabActivity.setTitle(R.string.common_appname);
+		tabActivity.getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 	}
 	
 	@Override
@@ -81,8 +81,8 @@ public abstract class SubsonicTabFragment extends SherlockListFragment implement
 	
     public abstract void refresh();
     
-    protected MainActivity getMainActivity() {
-    	return (MainActivity) getActivity();
+    protected SubsonicTabActivity getTabActivity() {
+    	return (SubsonicTabActivity) getActivity();
     }
     
     public void setProgressVisible(boolean visible) {
@@ -93,7 +93,7 @@ public abstract class SubsonicTabFragment extends SherlockListFragment implement
     			if (progressView != null) {
     				progressView.setVisibility(visible ? View.VISIBLE : View.GONE);
     			}
-    			getMainActivity().setProgressVisible(visible);
+    			getTabActivity().setProgressVisible(visible);
     		}
     	}
     }

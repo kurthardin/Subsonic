@@ -1,6 +1,6 @@
 package github.daneren2005.dsub.util;
 
-import github.daneren2005.dsub.activity.MainActivity;
+import github.daneren2005.dsub.activity.SubsonicActivity;
 import github.daneren2005.dsub.fragment.SubsonicTabFragment;
 
 /**
@@ -53,7 +53,7 @@ public abstract class TabFragmentBackgroundTask<T> extends BackgroundTask<T> {
     }
 
     private boolean isCancelled() {
-    	MainActivity activity = tabFragment == null ? null : (MainActivity) tabFragment.getActivity();
+    	SubsonicActivity activity = tabFragment == null ? null : (SubsonicActivity) tabFragment.getActivity();
         return activity == null ? true : activity.isDestroyed();
     }
 

@@ -21,8 +21,8 @@ package github.daneren2005.dsub.fragment;
 
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.activity.DownloadActivity;
-import github.daneren2005.dsub.activity.MainActivity;
 import github.daneren2005.dsub.activity.SelectAlbumActivity;
+import github.daneren2005.dsub.activity.SubsonicTabActivity;
 import github.daneren2005.dsub.domain.Artist;
 import github.daneren2005.dsub.domain.Indexes;
 import github.daneren2005.dsub.domain.MusicFolder;
@@ -106,7 +106,7 @@ implements OnItemSelectedListener {
             protected void done(List<MusicFolder> result) {
             	musicFolders = result;
             	if (musicFolders != null) {
-            		MainActivity activity = getMainActivity();
+            		SubsonicTabActivity activity = getTabActivity();
             		List<CharSequence> musicFolderNames = new ArrayList<CharSequence>(musicFolders.size() + 1);
             		musicFolderNames.add(getString(R.string.select_artist_all_folders));
             		for (MusicFolder folder: musicFolders) {
@@ -212,7 +212,7 @@ implements OnItemSelectedListener {
     		Artist artist = (Artist) getListView().getItemAtPosition(info.position);
 
     		if (artist != null) {
-    			MainActivity activity = getMainActivity();
+    			SubsonicTabActivity activity = getTabActivity();
     			switch (menuItem.getItemId()) {
     			case R.id.artist_menu_play_now:
     				activity.downloadRecursively(artist.getId(), false, false, true, false);

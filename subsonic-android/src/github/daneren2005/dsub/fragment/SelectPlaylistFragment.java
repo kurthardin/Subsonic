@@ -77,14 +77,14 @@ public class SelectPlaylistFragment extends SubsonicTabFragment {
         BackgroundTask<List<Playlist>> task = new TabFragmentBackgroundTask<List<Playlist>>(SelectPlaylistFragment.this) {
             @Override
             protected List<Playlist> doInBackground() throws Throwable {
-                MusicService musicService = MusicServiceFactory.getMusicService(getMainActivity());
-                return musicService.getPlaylists(mShouldRefresh, getMainActivity(), this);
+                MusicService musicService = MusicServiceFactory.getMusicService(getTabActivity());
+                return musicService.getPlaylists(mShouldRefresh, getTabActivity(), this);
             }
 
             @Override
             protected void done(List<Playlist> result) {
                 updateProgress(getString(R.string.select_artist_empty));
-                setListAdapter(new PlaylistAdapter(getMainActivity(), PlaylistAdapter.PlaylistComparator.sort(result)));
+                setListAdapter(new PlaylistAdapter(getTabActivity(), PlaylistAdapter.PlaylistComparator.sort(result)));
             }
         };
         task.execute();
