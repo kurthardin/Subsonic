@@ -36,6 +36,15 @@ import com.actionbarsherlock.app.SherlockListFragment;
  */
 public abstract class SubsonicTabFragment extends SherlockListFragment implements Refreshable {
 	
+	private boolean mIsSelected;
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+    	super.onCreate(savedInstanceState);
+    	setRetainInstance(true);
+    	setHasOptionsMenu(true);
+    }
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -60,9 +69,14 @@ public abstract class SubsonicTabFragment extends SherlockListFragment implement
 	}
 	
 	public final void onPageSelected() {
+		mIsSelected = true;
 		if (getActivity() != null) {
 			refresh();
 		}
+	}
+	
+	public final void onPageDeselected() {
+		mIsSelected = false;
 	}
 	
     public abstract void refresh();
@@ -72,22 +86,26 @@ public abstract class SubsonicTabFragment extends SherlockListFragment implement
     }
     
     public void setProgressVisible(boolean visible) {
-    	View view = getView();
-    	if (view != null) {
-    		View progressView = view.findViewById(R.id.tab_progress_bar);
-    		if (progressView != null) {
-    			progressView.setVisibility(visible ? View.VISIBLE : View.GONE);
+    	if (mIsSelected) {
+    		View view = getView();
+    		if (view != null) {
+    			View progressView = view.findViewById(R.id.tab_progress_bar);
+    			if (progressView != null) {
+    				progressView.setVisibility(visible ? View.VISIBLE : View.GONE);
+    			}
+    			getMainActivity().setProgressVisible(visible);
     		}
-    		getMainActivity().setProgressVisible(visible);
     	}
     }
     
     public void updateProgress(String message) {
-    	View view = getView();
-    	if (view != null) {
-    		TextView textView = (TextView) view.findViewById(R.id.tab_progress_message);
-    		if (textView != null) {
-    			textView.setText(message);
+    	if (mIsSelected) {
+    		View view = getView();
+    		if (view != null) {
+    			TextView textView = (TextView) view.findViewById(R.id.tab_progress_message);
+    			if (textView != null) {
+    				textView.setText(message);
+    			}
     		}
     	}
     }

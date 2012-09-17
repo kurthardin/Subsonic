@@ -70,7 +70,6 @@ implements OnItemSelectedListener {
     
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
     	registerForContextMenu(getListView());
     	
     	mMusicFolderHeader = getView().findViewById(R.id.music_folder_header);

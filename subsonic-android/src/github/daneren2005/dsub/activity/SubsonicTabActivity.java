@@ -19,8 +19,9 @@
 package github.daneren2005.dsub.activity;
 
 import github.daneren2005.dsub.R;
+import github.daneren2005.dsub.service.DownloadFile;
+import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
-import github.daneren2005.dsub.util.NowPlayingHelper;
 import github.daneren2005.dsub.util.SimpleServiceBinder;
 import github.daneren2005.dsub.view.NowPlayingView;
 import android.content.ComponentName;
@@ -34,24 +35,23 @@ import android.os.IBinder;
  * @author Kurt Hardin
  */
 public abstract class SubsonicTabActivity extends SubsonicActivity {
-	
-	protected DownloadServiceImpl mDownloadService;
 
 	private final ServiceConnection mConnection = new ServiceConnection() {
 		@SuppressWarnings("unchecked")
 		public void onServiceConnected(ComponentName className, IBinder service) {
 			mDownloadService = ((SimpleServiceBinder<DownloadServiceImpl>) service).getService();
-			NowPlayingHelper.onResume(mDownloadService, getNowPlayingView());
+			configureNowPlayingView();
 		}
 
 		public void onServiceDisconnected(ComponentName className) {
 			mDownloadService = null;
-			if (getNowPlayingView() != null) {
-				getNowPlayingView().onCurrentSongChanged(null, null);
+			if (mNowPlayingView != null) {
+				mNowPlayingView.onCurrentSongChanged(null, null);
 			}
 		}
 	};
-	
+
+	private DownloadService mDownloadService;
 	private NowPlayingView mNowPlayingView;
 
 	@Override
@@ -66,13 +66,15 @@ public abstract class SubsonicTabActivity extends SubsonicActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		NowPlayingHelper.onResume(mDownloadService, getNowPlayingView());
+		configureNowPlayingView();
 	}
 
 	@Override
 	public void onPause() {
+		if (mDownloadService != null) {
+			mDownloadService.setNowPlayingListener(null);
+        }
 		super.onPause();
-		NowPlayingHelper.onPause(mDownloadService);
 	}
 	
 	@Override
@@ -82,11 +84,16 @@ public abstract class SubsonicTabActivity extends SubsonicActivity {
 		super.onDestroy();
 	}
 	
-	private NowPlayingView getNowPlayingView() {
+	public void configureNowPlayingView() {
 		if (mNowPlayingView == null) {
 			mNowPlayingView = (NowPlayingView) findViewById(R.id.now_playing_view);
 		}
-		return mNowPlayingView;
+		if (mDownloadService != null && mNowPlayingView != null) {
+			mDownloadService.setNowPlayingListener(mNowPlayingView);
+			DownloadFile currentFile = mDownloadService.getCurrentPlaying();
+			mNowPlayingView.onCurrentSongChanged(mDownloadService, currentFile == null ? null : currentFile.getSong());
+			mNowPlayingView.onPlaybackStateChanged(mDownloadService, mDownloadService.getPlayerState());
+		}
 	}
 
 }

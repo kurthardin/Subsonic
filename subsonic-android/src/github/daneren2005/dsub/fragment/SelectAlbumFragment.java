@@ -19,7 +19,6 @@
 package github.daneren2005.dsub.fragment;
 
 import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.activity.DownloadActivity;
 import github.daneren2005.dsub.activity.SelectAlbumActivity;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.service.DownloadFile;
@@ -57,7 +56,9 @@ import com.actionbarsherlock.view.MenuItem;
 public class SelectAlbumFragment extends SubsonicTabFragment {
 
     private static final String TAG = SelectAlbumFragment.class.getSimpleName();
-
+    
+    private Menu mOptionsMenu;
+    
     private View footer;
     private Button selectButton;
     private Button playNowButton;
@@ -104,8 +105,6 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-
-        setHasOptionsMenu(true);
 
     	ListView entryListView = getListView();
 
@@ -224,8 +223,7 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.select_album_options, menu);
-        boolean isAlbumList = mAlbumListType != null;//getIntent().hasExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
-        menu.findItem(R.id.action_play_all).setVisible(isAlbumList || getListView().getCount() == 0 ? false : true);
+        mOptionsMenu = menu;
     }
 
     @Override
@@ -590,7 +588,13 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
 				deleteButton.setVisibility(View.GONE);
             }
 
-            getMainActivity().invalidateOptionsMenu();
+            if (mOptionsMenu != null) {
+            	boolean isAlbumList = mAlbumListType != null;//getIntent().hasExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE);
+            	MenuItem playAll = mOptionsMenu.findItem(R.id.action_play_all);
+            	if (playAll != null) {
+            		playAll.setVisible(isAlbumList || getListView().getCount() == 0 ? false : true);
+            	}
+            }
             
             licenseValid = result.getSecond();
 

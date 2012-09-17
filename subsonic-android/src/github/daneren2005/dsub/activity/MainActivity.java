@@ -20,7 +20,6 @@
 package github.daneren2005.dsub.activity;
 
 import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.fragment.SelectAlbumFragment;
 import github.daneren2005.dsub.fragment.SelectAlbumFragment.AlbumListType;
 import github.daneren2005.dsub.fragment.SelectArtistFragment;
@@ -28,100 +27,30 @@ import github.daneren2005.dsub.fragment.SelectPlaylistFragment;
 import github.daneren2005.dsub.fragment.SubsonicTabFragment;
 import github.daneren2005.dsub.interfaces.Exitable;
 import github.daneren2005.dsub.interfaces.Restartable;
-import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
-import github.daneren2005.dsub.service.MusicService;
-import github.daneren2005.dsub.service.MusicServiceFactory;
 import github.daneren2005.dsub.util.Constants;
-import github.daneren2005.dsub.util.FileUtil;
-import github.daneren2005.dsub.util.ImageLoader;
-import github.daneren2005.dsub.util.MainOptionsMenuHelper;
-import github.daneren2005.dsub.util.ModalBackgroundTask;
-import github.daneren2005.dsub.util.NowPlayingHelper;
-import github.daneren2005.dsub.util.SelectServerHelper;
-import github.daneren2005.dsub.util.SimpleServiceBinder;
 import github.daneren2005.dsub.util.Util;
-import github.daneren2005.dsub.view.NowPlayingView;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.LinkedList;
-import java.util.List;
-
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.media.AudioManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
-import android.view.ContextMenu;
-import android.view.KeyEvent;
-import android.view.View;
-import android.view.Window;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-
-public class MainActivity extends SherlockFragmentActivity 
+public class MainActivity extends SubsonicTabActivity 
 implements Exitable, Restartable {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
-    private static ImageLoader IMAGE_LOADER;
-    
-    protected DownloadServiceImpl mDownloadService;
-
-	private final ServiceConnection mConnection = new ServiceConnection() {
-		@SuppressWarnings("unchecked")
-		public void onServiceConnected(ComponentName className, IBinder service) {
-			mDownloadService = ((SimpleServiceBinder<DownloadServiceImpl>) service).getService();
-			NowPlayingHelper.onResume(mDownloadService, getNowPlayingView());
-		}
-
-		public void onServiceDisconnected(ComponentName className) {
-			mDownloadService = null;
-			if (getNowPlayingView() != null) {
-				getNowPlayingView().onCurrentSongChanged(null, null);
-			}
-		}
-	};
 	
-	private NowPlayingView mNowPlayingView;
-    
     private MainActivityPagerAdapter mPagerAdapter;
     private ViewPager mViewPager;
-
-    private boolean destroyed;
-
-    private String theme;
-
-    private static boolean infoDialogDisplayed;
-
+    
+    private SubsonicTabFragment prevPageFragment;
+    
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-    	
-        setUncaughtExceptionHandler();
-        applyTheme();
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.main);
-        
-        startService(new Intent(this, DownloadServiceImpl.class));
-		// bind to our database using our Service Connection
-		Intent serviceIntent = new Intent(this, DownloadServiceImpl.class);
-		bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
      
         mPagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -152,8 +81,11 @@ implements Exitable, Restartable {
     }
     
     private void notifyFragmentOnPageSelected(int position) {
-		SubsonicTabFragment fragment = (SubsonicTabFragment) mPagerAdapter.instantiateItem(mViewPager, position);
-		fragment.onPageSelected();
+    	if (prevPageFragment != null) {
+    		prevPageFragment.onPageDeselected();
+    	}
+		prevPageFragment = (SubsonicTabFragment) mPagerAdapter.instantiateItem(mViewPager, position);
+		prevPageFragment.onPageSelected();
     }
     
     private void handleExtras(Intent intent) {
@@ -167,268 +99,14 @@ implements Exitable, Restartable {
     @Override
     protected void onPostCreate(Bundle bundle) {
         super.onPostCreate(bundle);
-        
-        loadSettings();
-        setProgressVisible(false);
-        showInfoDialog();
-
-        // Remember the current theme.
-        theme = Util.getTheme(this);
-
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        getSupportActionBar().setHomeButtonEnabled(false);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        // Restart activity if theme has changed.
-        if (theme != null && !theme.equals(Util.getTheme(this))) {
-            restart();
-        }
-
-        loadSettings();
-        Util.registerMediaButtonEventReceiver(this);
-        
-        MainOptionsMenuHelper.registerForServerContextMenu(this);
-        NowPlayingHelper.onResume(mDownloadService, getNowPlayingView());
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MainOptionsMenuHelper.onCreateOptionsMenu(getSupportMenuInflater(), menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-    
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        return MainOptionsMenuHelper.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-    	return MainOptionsMenuHelper.onOptionsItemSelected(this, item);
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
-    	super.onCreateContextMenu(menu, view, menuInfo);
-    	SelectServerHelper.onCreateContextMenu(this, menu, view, menuInfo);
-    }
-
-    @Override
-    public boolean onContextItemSelected(android.view.MenuItem menuItem) {
-    	if (SelectServerHelper.onContextItemSelected(this, menuItem)) {
-    		return true;
-    	}
-    	return super.onContextItemSelected(menuItem);
-    }
-    
-    @Override
-    protected void onPause() {
-    	super.onPause();
-    	NowPlayingHelper.onPause(mDownloadService);
-    }
-
-    @Override
-    protected void onDestroy() {
-		unbindService(mConnection);
-		mDownloadService = null;
-        super.onDestroy();
-        destroyed = true;
-        getImageLoader().clear();
-    }
-
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        boolean isVolumeDown = keyCode == KeyEvent.KEYCODE_VOLUME_DOWN;
-        boolean isVolumeUp = keyCode == KeyEvent.KEYCODE_VOLUME_UP;
-        boolean isVolumeAdjust = isVolumeDown || isVolumeUp;
-        boolean isJukebox = Util.getDownloadService(this) != null && Util.getDownloadService(this).isJukeboxEnabled();
-
-        if (isVolumeAdjust && isJukebox) {
-            Util.getDownloadService(this).adjustJukeboxVolume(isVolumeUp);
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
-        Util.disablePendingTransition(this);
-    }
-
-    private void loadSettings() {
-        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
-        SharedPreferences prefs = Util.getPreferences(this);
-        if (!prefs.contains(Constants.PREFERENCES_KEY_CACHE_LOCATION)) {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString(Constants.PREFERENCES_KEY_CACHE_LOCATION, FileUtil.getDefaultMusicDirectory().getPath());
-            editor.commit();
-        }
-    }
-
-    private void showInfoDialog() {
-        if (!infoDialogDisplayed) {
-            infoDialogDisplayed = true;
-            if (Util.getRestUrl(this, null).contains("demo.subsonic.org")) {
-                Util.info(this, R.string.main_welcome_title, R.string.main_welcome_text);
-            }
-        }
-    }
-
-    private void applyTheme() {
-        String theme = Util.getTheme(this);
-//        if ("dark".equals(theme)) {
-//            setTheme(R.style.Theme_Dark);
-//        } else 
-        if ("light".equals(theme)) {
-            setTheme(R.style.Theme_DSub_Light);
-        }
-    }
-
-    public void restart() {
-    	Intent intent = new Intent(getIntent());
-    	intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    	startActivity(intent);
-    }
-
     public void exit() {
         stopService(new Intent(this, DownloadServiceImpl.class));
         finish();
-    }
-    
-    public boolean isDestroyed() {
-        return destroyed;
-    }
-	
-	private NowPlayingView getNowPlayingView() {
-		if (mNowPlayingView == null) {
-			mNowPlayingView = (NowPlayingView) findViewById(R.id.now_playing_view);
-		}
-		return mNowPlayingView;
-	}
-
-    public void setProgressVisible(boolean visible) {
-    	setSupportProgressBarIndeterminateVisibility(visible);
-    	MainOptionsMenuHelper.setRefreshVisible(!visible);
-    	if (!visible) {
-        	updateProgress(null);
-    	}
-    }
-
-    public void updateProgress(String message) {
-//    	getSupportActionBar().setSubtitle(message);
-    	Log.w(TAG, "MainActivity.updateProgress() does nothing...");
-    }
-
-    public void warnIfNetworkOrStorageUnavailable() {
-        if (!Util.isExternalStoragePresent()) {
-            Util.toast(this, R.string.select_album_no_sdcard);
-        } else if (!Util.isOffline(this) && !Util.isNetworkConnected(this)) {
-            Util.toast(this, R.string.select_album_no_network);
-        }
-    }
-
-    public synchronized ImageLoader getImageLoader() {
-        if (IMAGE_LOADER == null) {
-            IMAGE_LOADER = new ImageLoader(this);
-        }
-        return IMAGE_LOADER;
-    }
-
-    public void downloadRecursively(final String id, final boolean save, final boolean append, final boolean autoplay, final boolean shuffle) {
-        ModalBackgroundTask<List<MusicDirectory.Entry>> task = new ModalBackgroundTask<List<MusicDirectory.Entry>>(this, false) {
-
-            private static final int MAX_SONGS = 500;
-
-            @Override
-            protected List<MusicDirectory.Entry> doInBackground() throws Throwable {
-                MusicService musicService = MusicServiceFactory.getMusicService(MainActivity.this);
-                MusicDirectory root = musicService.getMusicDirectory(id, false, MainActivity.this, this);
-                List<MusicDirectory.Entry> songs = new LinkedList<MusicDirectory.Entry>();
-                getSongsRecursively(root, songs);
-                return songs;
-            }
-
-            private void getSongsRecursively(MusicDirectory parent, List<MusicDirectory.Entry> songs) throws Exception {
-                if (songs.size() > MAX_SONGS) {
-                    return;
-                }
-
-                for (MusicDirectory.Entry song : parent.getChildren(false, true)) {
-                    if (!song.isVideo()) {
-                        songs.add(song);
-                    }
-                }
-                for (MusicDirectory.Entry dir : parent.getChildren(true, false)) {
-                    MusicService musicService = MusicServiceFactory.getMusicService(MainActivity.this);
-                    getSongsRecursively(musicService.getMusicDirectory(dir.getId(), false, MainActivity.this, this), songs);
-                }
-            }
-
-            @Override
-            protected void done(List<MusicDirectory.Entry> songs) {
-                DownloadService downloadService = Util.getDownloadService(MainActivity.this);
-                if (!songs.isEmpty() && downloadService != null) {
-                    if (!append) {
-                        downloadService.clear();
-                    }
-                    warnIfNetworkOrStorageUnavailable();
-                    downloadService.download(songs, save, autoplay, false, shuffle);
-                }
-            }
-        };
-
-        task.execute();
-    }
-
-    private void setUncaughtExceptionHandler() {
-        Thread.UncaughtExceptionHandler handler = Thread.getDefaultUncaughtExceptionHandler();
-        if (!(handler instanceof SubsonicUncaughtExceptionHandler)) {
-            Thread.setDefaultUncaughtExceptionHandler(new SubsonicUncaughtExceptionHandler(this));
-        }
-    }
-
-    /**
-     * Logs the stack trace of uncaught exceptions to a file on the SD card.
-     */
-    private static class SubsonicUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-
-        private final Thread.UncaughtExceptionHandler defaultHandler;
-        private final Context context;
-
-        private SubsonicUncaughtExceptionHandler(Context context) {
-            this.context = context;
-            defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
-        }
-
-        @Override
-        public void uncaughtException(Thread thread, Throwable throwable) {
-            File file = null;
-            PrintWriter printWriter = null;
-            try {
-
-                PackageInfo packageInfo = context.getPackageManager().getPackageInfo("github.daneren2005.dsub", 0);
-                file = new File(Environment.getExternalStorageDirectory(), "subsonic-stacktrace.txt");
-                printWriter = new PrintWriter(file);
-                printWriter.println("Android API level: " + Build.VERSION.SDK_INT);
-                printWriter.println("Subsonic version name: " + packageInfo.versionName);
-                printWriter.println("Subsonic version code: " + packageInfo.versionCode);
-                printWriter.println();
-                throwable.printStackTrace(printWriter);
-                Log.i(TAG, "Stack trace written to " + file);
-            } catch (Throwable x) {
-                Log.e(TAG, "Failed to write stack trace to " + file, x);
-            } finally {
-                Util.close(printWriter);
-                if (defaultHandler != null) {
-                    defaultHandler.uncaughtException(thread, throwable);
-                }
-
-            }
-        }
     }
     
     public class MainActivityPagerAdapter extends FragmentPagerAdapter {
