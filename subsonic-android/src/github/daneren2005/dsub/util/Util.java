@@ -44,6 +44,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.KeyEvent;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -58,6 +59,11 @@ import github.daneren2005.dsub.provider.DSubWidgetProvider;
 import github.daneren2005.dsub.receiver.MediaButtonIntentReceiver;
 import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
+import github.daneren2005.dsub.service.MusicService;
+import github.daneren2005.dsub.service.MusicServiceFactory;
+import github.daneren2005.dsub.service.OfflineException;
+import github.daneren2005.dsub.service.ServerTooOldException;
+
 import org.apache.http.HttpEntity;
 
 import java.io.ByteArrayOutputStream;
@@ -260,6 +266,44 @@ public final class Util {
         long millisPerDay = 24L * 60L * 60L * 1000L;
         int daysSinceInstall = (int) ((now - installTime) / millisPerDay);
         return Math.max(0, Constants.FREE_TRIAL_DAYS - daysSinceInstall);
+    }
+	
+    public static void toggleStarredInBackground(final Activity activity, final MusicDirectory.Entry entry, final ImageButton button) {
+        
+    	final boolean starred = !entry.isStarred();
+    	
+    	button.setImageResource(starred ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
+    	entry.setStarred(starred);
+    	
+        //        Util.toast(SubsonicTabActivity.this, getResources().getString(R.string.starring_content, entry.getTitle()));
+        new SilentBackgroundTask<Void>(activity) {
+            @Override
+            protected Void doInBackground() throws Throwable {
+                MusicService musicService = MusicServiceFactory.getMusicService(activity);
+				musicService.setStarred(entry.getId(), starred, activity, null);
+                return null;
+            }
+            
+            @Override
+            protected void done(Void result) {
+                //                Util.toast(SubsonicTabActivity.this, getResources().getString(R.string.starring_content_done, entry.getTitle()));
+            }
+            
+            @Override
+            protected void error(Throwable error) {
+            	button.setImageResource(!starred ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
+            	entry.setStarred(!starred);
+            	
+            	String msg;
+            	if (error instanceof OfflineException || error instanceof ServerTooOldException) {
+            		msg = getErrorMessage(error);
+            	} else {
+            		msg = activity.getResources().getString(R.string.starring_content_error, entry.getTitle()) + " " + getErrorMessage(error);
+            	}
+            	
+        		Util.toast(activity, msg, false);
+            }
+        }.execute();
     }
 
     /**

@@ -18,6 +18,16 @@
  */
 package github.daneren2005.dsub.util;
 
+import github.daneren2005.dsub.R;
+import github.daneren2005.dsub.domain.MusicDirectory;
+import github.daneren2005.dsub.service.DownloadFile;
+import github.daneren2005.dsub.service.DownloadService;
+import github.daneren2005.dsub.service.DownloadServiceImpl;
+
+import java.io.File;
+import java.util.WeakHashMap;
+
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
@@ -28,15 +38,6 @@ import android.widget.CheckedTextView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import github.daneren2005.dsub.R;
-import github.daneren2005.dsub.activity.SubsonicTabActivity;
-import github.daneren2005.dsub.domain.MusicDirectory;
-import github.daneren2005.dsub.service.DownloadService;
-import github.daneren2005.dsub.service.DownloadServiceImpl;
-import github.daneren2005.dsub.service.DownloadFile;
-
-import java.io.File;
-import java.util.WeakHashMap;
 
 /**
  * Used to display songs in a {@code ListView}.
@@ -72,8 +73,7 @@ public class SongView extends LinearLayout implements Checkable {
         starButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				SubsonicTabActivity activity = (SubsonicTabActivity) getContext();
-				activity.toggleStarredInBackground(song, starButton);
+				Util.toggleStarredInBackground((Activity) getContext(), song, starButton);
 			}
 		});
 

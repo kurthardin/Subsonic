@@ -53,7 +53,6 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
     private static final int MENU_ITEM_OFFLINE = 104;
 
     private static ImageLoader IMAGE_LOADER;
-    private static boolean infoDialogDisplayed;
 
     private boolean destroyed;
     private String theme;
@@ -83,8 +82,6 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
     	ViewGroup contentView = (ViewGroup) getWindow().getDecorView().findViewById(android.R.id.content);
     	contentView.addView(mServerContextView, 0);
         
-        loadSettings();
-        
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         
@@ -92,8 +89,6 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
 
         // Remember the current theme.
         theme = Util.getTheme(this);
-
-        showInfoDialog();
     }
 
     @Override
@@ -105,7 +100,6 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
             restart();
         }
 
-        loadSettings();
         Util.registerMediaButtonEventReceiver(this);
     }
 
@@ -259,25 +253,6 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
         return super.onKeyDown(keyCode, event);
     }
 
-    private void loadSettings() {
-        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
-        SharedPreferences prefs = Util.getPreferences(this);
-        if (!prefs.contains(Constants.PREFERENCES_KEY_CACHE_LOCATION)) {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString(Constants.PREFERENCES_KEY_CACHE_LOCATION, FileUtil.getDefaultMusicDirectory().getPath());
-            editor.commit();
-        }
-    }
-
-    private void showInfoDialog() {
-        if (!infoDialogDisplayed) {
-            infoDialogDisplayed = true;
-            if (Util.getRestUrl(this, null).contains("demo.subsonic.org")) {
-                Util.info(this, R.string.main_welcome_title, R.string.main_welcome_text);
-            }
-        }
-    }
-
     private void applyTheme() {
         String theme = Util.getTheme(this);
 //        if ("dark".equals(theme)) {
@@ -286,44 +261,6 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
         if ("light".equals(theme)) {
             setTheme(R.style.Theme_DSub_Light);
         }
-    }
-	
-    public void toggleStarredInBackground(final MusicDirectory.Entry entry, final ImageButton button) {
-        
-    	final boolean starred = !entry.isStarred();
-    	
-    	button.setImageResource(starred ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
-    	entry.setStarred(starred);
-    	
-        //        Util.toast(SubsonicTabActivity.this, getResources().getString(R.string.starring_content, entry.getTitle()));
-        new SilentBackgroundTask<Void>(this) {
-            @Override
-            protected Void doInBackground() throws Throwable {
-                MusicService musicService = MusicServiceFactory.getMusicService(SubsonicActivity.this);
-				musicService.setStarred(entry.getId(), starred, SubsonicActivity.this, null);
-                return null;
-            }
-            
-            @Override
-            protected void done(Void result) {
-                //                Util.toast(SubsonicTabActivity.this, getResources().getString(R.string.starring_content_done, entry.getTitle()));
-            }
-            
-            @Override
-            protected void error(Throwable error) {
-            	button.setImageResource(!starred ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
-            	entry.setStarred(!starred);
-            	
-            	String msg;
-            	if (error instanceof OfflineException || error instanceof ServerTooOldException) {
-            		msg = getErrorMessage(error);
-            	} else {
-            		msg = getResources().getString(R.string.starring_content_error, entry.getTitle()) + " " + getErrorMessage(error);
-            	}
-            	
-        		Util.toast(SubsonicActivity.this, msg, false);
-            }
-        }.execute();
     }
 
     public void restart() {

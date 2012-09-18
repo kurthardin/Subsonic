@@ -29,9 +29,12 @@ import github.daneren2005.dsub.interfaces.Exitable;
 import github.daneren2005.dsub.interfaces.Restartable;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
 import github.daneren2005.dsub.util.Constants;
+import github.daneren2005.dsub.util.FileUtil;
 import github.daneren2005.dsub.util.Util;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -44,8 +47,9 @@ implements Exitable, Restartable {
 	
     private MainActivityPagerAdapter mPagerAdapter;
     private ViewPager mViewPager;
-    
     private SubsonicTabFragment prevPageFragment;
+    
+    private static boolean infoDialogDisplayed;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -99,14 +103,42 @@ implements Exitable, Restartable {
     @Override
     protected void onPostCreate(Bundle bundle) {
         super.onPostCreate(bundle);
+        
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         getSupportActionBar().setHomeButtonEnabled(false);
+
+        showInfoDialog();
+    }
+    
+    @Override
+    public void onResume() {
+    	super.onResume();
+        loadSettings();
     }
 
     @Override
     public void exit() {
         stopService(new Intent(this, DownloadServiceImpl.class));
         finish();
+    }
+
+    private void showInfoDialog() {
+        if (!infoDialogDisplayed) {
+            infoDialogDisplayed = true;
+            if (Util.getRestUrl(this, null).contains("demo.subsonic.org")) {
+                Util.info(this, R.string.main_welcome_title, R.string.main_welcome_text);
+            }
+        }
+    }
+
+    private void loadSettings() {
+        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
+        SharedPreferences prefs = Util.getPreferences(this);
+        if (!prefs.contains(Constants.PREFERENCES_KEY_CACHE_LOCATION)) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString(Constants.PREFERENCES_KEY_CACHE_LOCATION, FileUtil.getDefaultMusicDirectory().getPath());
+            editor.commit();
+        }
     }
     
     public class MainActivityPagerAdapter extends FragmentPagerAdapter {

@@ -164,7 +164,7 @@ public class DownloadActivity extends SubsonicActivity implements OnGestureListe
 				DownloadFile currentDownload = Util.getDownloadService(DownloadActivity.this).getCurrentPlaying();
 				if (currentDownload != null) {
 					MusicDirectory.Entry currentSong = currentDownload.getSong();
-					toggleStarredInBackground(currentSong, starButton);
+					Util.toggleStarredInBackground(DownloadActivity.this, currentSong, starButton);
 				}
 			}
 		});
