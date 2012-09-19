@@ -37,19 +37,6 @@
     <string name="main.albums_frequent">Most played</string>
     <string name="main.albums_highest">Top rated</string>
     <string name="main.albums_random">Random</string>
-    
-    <string name="dashboard.select_server">Server:</string>
-    <string name="dashboard.now_playing">Now playing</string>
-    <string name="dashboard.artists">Artists</string>
-    <string name="dashboard.albums_title">Albums</string>
-    <string name="dashboard.albums_newest">Recently added</string>
-    <string name="dashboard.albums_recent">Recently played</string>
-    <string name="dashboard.albums_frequent">Most played</string>
-    <string name="dashboard.albums_highest">Top rated</string>
-    <string name="dashboard.albums_random">Random</string>
-    <string name="dashboard.playlists">Playlists</string>
-    <string name="dashboard.settings">Settings</string>
-    <string name="dashboard.help">Help</string>
 
     <string name="menu.exit">Exit</string>
     <string name="menu.help">Help</string>
