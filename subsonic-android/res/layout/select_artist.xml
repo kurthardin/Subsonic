@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="horizontal"
-        android:padding="5dp" >
+        android:padding="5dp"
+        android:visibility="gone" >
 
         <com.actionbarsherlock.internal.widget.IcsSpinner
             android:id="@+id/music_folder_spinner"

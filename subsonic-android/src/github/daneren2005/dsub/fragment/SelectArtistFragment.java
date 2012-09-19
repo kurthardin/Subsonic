@@ -73,17 +73,19 @@ implements OnItemSelectedListener {
     	registerForContextMenu(getListView());
     	
     	mMusicFolderHeader = getView().findViewById(R.id.music_folder_header);
-    	
     	mMusicFolderSpinner = (IcsSpinner) getView().findViewById(R.id.music_folder_spinner);
-        musicFolders = null;
-        loadMusicFolders();
         
     	super.onActivityCreated(savedInstanceState);
     }
     
     public void refresh() {
-    	mMusicFolderHeader.setVisibility(Util.isOffline(getActivity()) ? View.GONE : View.VISIBLE);
-    	loadArtists(true);
+    	if (Util.isOffline(getActivity())) {
+    		mMusicFolderHeader.setVisibility(View.GONE);
+        	loadArtists(true);
+    	} else {
+            musicFolders = null;
+            loadMusicFolders();
+    	}
     }
     
     public void shouldRefresh(boolean refresh) {
@@ -105,13 +107,15 @@ implements OnItemSelectedListener {
             @Override
             protected void done(List<MusicFolder> result) {
             	musicFolders = result;
-            	if (musicFolders != null) {
+            	if (musicFolders != null && musicFolders.size() > 0) {
             		SubsonicTabActivity activity = getTabActivity();
+            		
             		List<CharSequence> musicFolderNames = new ArrayList<CharSequence>(musicFolders.size() + 1);
             		musicFolderNames.add(getString(R.string.select_artist_all_folders));
             		for (MusicFolder folder: musicFolders) {
             			musicFolderNames.add(folder.getName());
             		}
+            		
                     ArrayAdapter<CharSequence> list = new ArrayAdapter<CharSequence>(activity, R.layout.sherlock_spinner_item, musicFolderNames);
                     list.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
                     mMusicFolderSpinner.setAdapter(list);
@@ -120,6 +124,14 @@ implements OnItemSelectedListener {
                     String musicFolderId = Util.getSelectedMusicFolderId(activity);
                     int dropDownId = musicFolderId == null ? 0 : Integer.valueOf(musicFolderId) + 1;
                     mMusicFolderSpinner.setSelection(dropDownId);
+            		
+            		if (musicFolders.size() > 1) {
+            			mMusicFolderHeader.setVisibility(View.VISIBLE);
+            		} else {
+                		mMusicFolderHeader.setVisibility(View.GONE);
+                	}
+            	} else {
+            		mMusicFolderHeader.setVisibility(View.GONE);
             	}
                 
             }
@@ -153,7 +165,7 @@ implements OnItemSelectedListener {
     	MusicFolder selectedFolder = itemId == 0 ? null : musicFolders.get((int) itemId - 1);
         String musicFolderId = selectedFolder == null ? null : selectedFolder.getId();
         Util.setSelectedMusicFolderId(getActivity(), musicFolderId);
-        refresh();
+        loadArtists(true);
     }
 
 	@Override

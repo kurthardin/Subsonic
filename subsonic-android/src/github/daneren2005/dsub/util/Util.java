@@ -40,6 +40,7 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
@@ -80,6 +81,8 @@ import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -160,7 +163,21 @@ public final class Util {
             return context.getResources().getString(R.string.main_offline);
         }
         SharedPreferences prefs = getPreferences(context);
-        return prefs.getString(Constants.PREFERENCES_KEY_SERVER_NAME + instance, null);
+        int numServers = prefs.getInt(Constants.PREFERENCES_KEY_SERVER_COUNT, 0);
+        if (instance <= numServers) {
+        	return prefs.getString(Constants.PREFERENCES_KEY_SERVER_NAME + instance, null);
+        }
+        return null;
+    }
+
+    public static List<String> getServerNames(Context context) {
+        SharedPreferences prefs = getPreferences(context);
+        int numServers = prefs.getInt(Constants.PREFERENCES_KEY_SERVER_COUNT, 0);
+        List<String> serverNames = new ArrayList<String>(numServers);
+        for (int i = 0; i <= numServers; i++) {
+        	serverNames.add(getServerName(context, i));
+        }
+        return serverNames;
     }
 
     public static void setServerRestVersion(Context context, Version version) {
@@ -238,6 +255,28 @@ public final class Util {
         builder.append("&c=").append(Constants.REST_CLIENT_ID);
 
         return builder.toString();
+    }
+
+    public static void setDefaultPreferenceValues(Context context) {
+        SharedPreferences prefs = Util.getPreferences(context);
+    	if (prefs.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false) && 
+    			!prefs.contains(Constants.PREFERENCES_KEY_SERVER_COUNT)) {
+    		prefs.edit()
+        	.putInt(Constants.PREFERENCES_KEY_SERVER_COUNT, 3)
+        	.commit();
+    	}
+        PreferenceManager.setDefaultValues(context, R.xml.settings, false);
+        prefs = Util.getPreferences(context);
+        if (!prefs.contains(Constants.PREFERENCES_KEY_CACHE_LOCATION)) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString(Constants.PREFERENCES_KEY_CACHE_LOCATION, FileUtil.getDefaultMusicDirectory().getPath());
+            editor.commit();
+        }
+        if (!prefs.contains(Constants.PREFERENCES_KEY_SERVER_COUNT)) {
+        	prefs.edit()
+        	.putInt(Constants.PREFERENCES_KEY_SERVER_COUNT, 1)
+        	.commit();
+        }
     }
 
     public static SharedPreferences getPreferences(Context context) {

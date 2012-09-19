@@ -29,12 +29,9 @@ import github.daneren2005.dsub.interfaces.Exitable;
 import github.daneren2005.dsub.interfaces.Restartable;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
 import github.daneren2005.dsub.util.Constants;
-import github.daneren2005.dsub.util.FileUtil;
 import github.daneren2005.dsub.util.Util;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -44,18 +41,18 @@ public class MainActivity extends SubsonicTabActivity
 implements Exitable, Restartable {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
+    
+    private static boolean infoDialogDisplayed;
 	
     private MainActivityPagerAdapter mPagerAdapter;
     private ViewPager mViewPager;
     private SubsonicTabFragment prevPageFragment;
     
-    private static boolean infoDialogDisplayed;
-    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-     
+        
         mPagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mPagerAdapter);
@@ -81,7 +78,7 @@ implements Exitable, Restartable {
     @Override
     protected void onNewIntent(Intent intent) {
     	handleExtras(intent);
-    	notifyFragmentOnPageSelected(mViewPager.getCurrentItem());
+    	mPagerAdapter.notifyDataSetChanged();
     }
     
     private void notifyFragmentOnPageSelected(int position) {
@@ -113,7 +110,7 @@ implements Exitable, Restartable {
     @Override
     public void onResume() {
     	super.onResume();
-        loadSettings();
+        Util.setDefaultPreferenceValues(this);
     }
 
     @Override
@@ -128,16 +125,6 @@ implements Exitable, Restartable {
             if (Util.getRestUrl(this, null).contains("demo.subsonic.org")) {
                 Util.info(this, R.string.main_welcome_title, R.string.main_welcome_text);
             }
-        }
-    }
-
-    private void loadSettings() {
-        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
-        SharedPreferences prefs = Util.getPreferences(this);
-        if (!prefs.contains(Constants.PREFERENCES_KEY_CACHE_LOCATION)) {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString(Constants.PREFERENCES_KEY_CACHE_LOCATION, FileUtil.getDefaultMusicDirectory().getPath());
-            editor.commit();
         }
     }
     
@@ -210,6 +197,21 @@ implements Exitable, Restartable {
     		}
     		
     		return fragment;
+    	}
+    	
+    	@Override
+    	public int getItemPosition(Object object) {
+    		int position;
+    		if (object instanceof SelectArtistFragment) {
+        		if (Util.isOffline(MainActivity.this)) {
+        			position = 0;
+        		} else {
+        			position = 3;
+        		}
+        	} else {
+        		position = POSITION_NONE;
+        	}
+        	return position;
     	}
 
     	@Override

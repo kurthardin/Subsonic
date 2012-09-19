@@ -4,10 +4,12 @@
                   android:title="@string/settings.title">
 
     <PreferenceCategory
-            android:title="@string/settings.servers_title">
-
+        android:key="serverCategory"
+        android:title="@string/settings.servers_title">
+        
         <PreferenceScreen
-                android:key="server1">
+                android:key="server1"
+                android:title="@string/settings.server_new_name">
 
             <EditTextPreference
                     android:key="serverName1"
@@ -30,27 +32,33 @@
                     android:title="@string/settings.server_password"
                     android:password="true"
                     android:defaultValue="guest"
-                    android:summary="****"/>
+                    android:summary="******"/>
 
             <Preference
                     android:key="testConnection1"
                     android:title="@string/settings.test_connection_title"
                     android:persistent="false"/>
 
+            <Preference
+                    android:key="removeServer1"
+                    android:title="@string/settings.server_remove"
+                    android:persistent="false"/>
+
         </PreferenceScreen>
 
         <PreferenceScreen
-                android:key="server2">
+                android:key="server2"
+                android:title="@string/settings.server_new_name">
 
             <EditTextPreference
                     android:key="serverName2"
                     android:title="@string/settings.server_name"
-                    android:defaultValue="@string/settings.server_unused1"/>
+                    android:defaultValue="@string/settings.server_new_name"/>
 
             <EditTextPreference
                     android:key="serverUrl2"
                     android:title="@string/settings.server_address"
-                    android:defaultValue="http://yourhost"
+                    android:defaultValue="http://"
                     android:inputType="textUri"/>
 
             <EditTextPreference
@@ -61,27 +69,33 @@
                     android:key="password2"
                     android:title="@string/settings.server_password"
                     android:password="true"
-                    android:summary="****"/>
+                    android:summary="******"/>
 
             <Preference
                     android:key="testConnection2"
                     android:title="@string/settings.test_connection_title"
                     android:persistent="false"/>
 
+            <Preference
+                    android:key="removeServer2"
+                    android:title="@string/settings.server_remove"
+                    android:persistent="false"/>
+
         </PreferenceScreen>
 
         <PreferenceScreen
-                android:key="server3">
+                android:key="server3"
+                android:title="@string/settings.server_new_name">
 
             <EditTextPreference
                     android:key="serverName3"
                     android:title="@string/settings.server_name"
-                    android:defaultValue="@string/settings.server_unused2"/>
+                    android:defaultValue="@string/settings.server_new_name"/>
 
             <EditTextPreference
                     android:key="serverUrl3"
                     android:title="@string/settings.server_address"
-                    android:defaultValue="http://yourhost"
+                    android:defaultValue="http://"
                     android:inputType="textUri"/>
 
             <EditTextPreference
@@ -92,11 +106,16 @@
                     android:key="password3"
                     android:title="@string/settings.server_password"
                     android:password="true"
-                    android:summary="****"/>
+                    android:summary="******"/>
 
             <Preference
                     android:key="testConnection3"
                     android:title="@string/settings.test_connection_title"
+                    android:persistent="false"/>
+
+            <Preference
+                    android:key="removeServer3"
+                    android:title="@string/settings.server_remove"
                     android:persistent="false"/>
 
         </PreferenceScreen>

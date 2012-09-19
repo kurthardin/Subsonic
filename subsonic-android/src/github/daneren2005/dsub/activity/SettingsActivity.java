@@ -18,14 +18,6 @@
  */
 package github.daneren2005.dsub.activity;
 
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceScreen;
-import android.provider.SearchRecentSuggestions;
-import android.util.Log;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.provider.SearchSuggestionProvider1;
 import github.daneren2005.dsub.service.DownloadService;
@@ -40,16 +32,32 @@ import github.daneren2005.dsub.util.Util;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import com.actionbarsherlock.app.ActionBar;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceScreen;
+import android.provider.SearchRecentSuggestions;
+import android.util.Log;
+
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 
 public class SettingsActivity extends SherlockPreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = SettingsActivity.class.getSimpleName();
+    private static final int MAX_SERVERS = 3;
+    
+    private PreferenceCategory serverCategory;
+	private List<Preference> serverPreferenceScreens = new ArrayList<Preference>(MAX_SERVERS);
     private final Map<String, ServerSettings> serverSettings = new LinkedHashMap<String, ServerSettings>();
     private boolean testingConnection;
     private ListPreference theme;
@@ -61,14 +69,45 @@ public class SettingsActivity extends SherlockPreferenceActivity implements Shar
     private ListPreference preloadCount;
 	private EditTextPreference randomSize;
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        Util.setDefaultPreferenceValues(this);
         
         addPreferencesFromResource(R.xml.settings);
+        
+        serverCategory = (PreferenceCategory) findPreference("serverCategory");
+        for (int i = 1; i <= MAX_SERVERS; i++) {
+        	final int serverId = i;
+        	final PreferenceScreen serverPref = (PreferenceScreen) findPreference("server" + serverId);
+        	serverPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					if (preference.getTitle().toString().equals(getString(R.string.settings_server_add))) {
+						addServer();
+					}
+					return false;
+				}
+			});
+            findPreference("testConnection" + serverId).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    testConnection(serverId);
+                    return false;
+                }
+            });
+            findPreference("removeServer" + serverId).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    removeServer(serverId);
+                    serverPref.getDialog().dismiss();
+                    return true;
+                }
+            });
+			serverPreferenceScreens.add(serverPref);
+		}
 
         theme = (ListPreference) findPreference(Constants.PREFERENCES_KEY_THEME);
         maxBitrateWifi = (ListPreference) findPreference(Constants.PREFERENCES_KEY_MAX_BITRATE_WIFI);
@@ -79,30 +118,6 @@ public class SettingsActivity extends SherlockPreferenceActivity implements Shar
         preloadCount = (ListPreference) findPreference(Constants.PREFERENCES_KEY_PRELOAD_COUNT);
 		randomSize = (EditTextPreference) findPreference(Constants.PREFERENCES_KEY_RANDOM_SIZE);
 
-        findPreference("testConnection1").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                testConnection(1);
-                return false;
-            }
-        });
-
-        findPreference("testConnection2").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                testConnection(2);
-                return false;
-            }
-        });
-
-        findPreference("testConnection3").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                testConnection(3);
-                return false;
-            }
-        });
-
         findPreference("clearSearchHistory").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -112,13 +127,24 @@ public class SettingsActivity extends SherlockPreferenceActivity implements Shar
                 return false;
             }
         });
-
-        for (int i = 1; i <= 3; i++) {
+        
+        SharedPreferences prefs = Util.getPreferences(this);
+        
+		int numServers = prefs.getInt(Constants.PREFERENCES_KEY_SERVER_COUNT, 0);
+        for (int i = 1; i <= numServers; i++) {
             String instance = String.valueOf(i);
             serverSettings.put(instance, new ServerSettings(instance));
         }
-
-        SharedPreferences prefs = Util.getPreferences(this);
+        if (numServers < MAX_SERVERS) {
+        	Preference serverScreen = findPreference("server" + String.valueOf(numServers + 1));
+        	serverScreen.setTitle(R.string.settings_server_add);
+        	for (int i = numServers + 2; i <= MAX_SERVERS; i++) {
+        		String instance = String.valueOf(i);
+        		Preference unusedServerPref = findPreference("server" + instance);
+        		serverCategory.removePreference(unusedServerPref);
+        	}
+        }
+		
         prefs.registerOnSharedPreferenceChangeListener(this);
 
         update();
@@ -164,6 +190,66 @@ public class SettingsActivity extends SherlockPreferenceActivity implements Shar
     public void finish() {
     	super.finish();
     	Util.disablePendingTransition(this);
+    }
+    
+    private void addServer() {
+    	SharedPreferences prefs = Util.getPreferences(SettingsActivity.this);
+    	int numServers = prefs.getInt(Constants.PREFERENCES_KEY_SERVER_COUNT, 0) + 1;
+    	
+    	String instance = String.valueOf(numServers);
+    	serverSettings.put(instance, new ServerSettings(instance));
+
+    	if (numServers < MAX_SERVERS) {
+    		Preference newAddServerPref = serverPreferenceScreens.get(numServers); // serverPreferenceScreens uses 0 based indexing.
+    		newAddServerPref.setTitle(R.string.settings_server_add);
+    		serverCategory.addPreference(newAddServerPref);
+    	}
+    	onContentChanged();
+    	
+    	prefs.edit().putInt(Constants.PREFERENCES_KEY_SERVER_COUNT, numServers).commit();
+    }
+    
+    private void removeServer(int serverId) {
+    	SharedPreferences prefs = Util.getPreferences(SettingsActivity.this);
+    	int numServers = prefs.getInt(Constants.PREFERENCES_KEY_SERVER_COUNT, 0);
+    	if (numServers > 0) {
+    		if (serverId < numServers) {
+    			for (int i = serverId + 1; i <= numServers; i++) {
+    				String serverName = prefs.getString("serverName" + i, getString(R.string.settings_server_new_name));
+    				String serverUrl = prefs.getString("serverUrl" + i, "http://");
+    				String username = prefs.getString("username" + i, null);
+    				String password = prefs.getString("password" + i, null);
+    				
+    				String prevServerKey = String.valueOf(i - 1);
+    				
+    				ServerSettings server = serverSettings.get(prevServerKey);
+    				server.setName(serverName);
+    				server.setUrl(serverUrl);
+    				server.setUsername(username);
+    				server.setPassword(password);
+				}
+    		}
+    		
+    		if (numServers < MAX_SERVERS) {
+    			Preference lastServerPref = serverPreferenceScreens.get(numServers);
+    			serverCategory.removePreference(lastServerPref);
+    		}
+
+    		ServerSettings removedServer = serverSettings.remove(String.valueOf(numServers));
+    		removedServer.reset();
+    		onContentChanged();
+    		
+    		prefs.edit()
+    		.putInt(Constants.PREFERENCES_KEY_SERVER_COUNT, numServers - 1)
+    		.commit();
+    		
+    		int activeServer = Util.getActiveServer(this);
+    		if (activeServer == serverId) {
+    			Util.setActiveServer(this, 0);
+    		} else if (activeServer > serverId) {
+    			Util.setActiveServer(this, activeServer - 1);
+    		}
+    	}
     }
 
     private void update() {
@@ -275,19 +361,22 @@ public class SettingsActivity extends SherlockPreferenceActivity implements Shar
     }
 
     private class ServerSettings {
-        private EditTextPreference serverName;
-        private EditTextPreference serverUrl;
-        private EditTextPreference username;
-        private PreferenceScreen screen;
+    	
+        private EditTextPreference mName;
+        private EditTextPreference mUrl;
+        private EditTextPreference mUsername;
+        private EditTextPreference mPassword;
+        private PreferenceScreen mScreen;
 
         private ServerSettings(String instance) {
 
-            screen = (PreferenceScreen) findPreference("server" + instance);
-            serverName = (EditTextPreference) findPreference(Constants.PREFERENCES_KEY_SERVER_NAME + instance);
-            serverUrl = (EditTextPreference) findPreference(Constants.PREFERENCES_KEY_SERVER_URL + instance);
-            username = (EditTextPreference) findPreference(Constants.PREFERENCES_KEY_USERNAME + instance);
+            mScreen = (PreferenceScreen) findPreference("server" + instance);
+            mName = (EditTextPreference) findPreference(Constants.PREFERENCES_KEY_SERVER_NAME + instance);
+            mUrl = (EditTextPreference) findPreference(Constants.PREFERENCES_KEY_SERVER_URL + instance);
+            mUsername = (EditTextPreference) findPreference(Constants.PREFERENCES_KEY_USERNAME + instance);
+            mPassword = (EditTextPreference) findPreference("password" + instance);
 
-            serverUrl.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            mUrl.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object value) {
                     try {
@@ -304,7 +393,7 @@ public class SettingsActivity extends SherlockPreferenceActivity implements Shar
                 }
             });
 
-            username.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            mUsername.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object value) {
                     String username = (String) value;
@@ -316,13 +405,46 @@ public class SettingsActivity extends SherlockPreferenceActivity implements Shar
                 }
             });
         }
-
-        public void update() {
-            serverName.setSummary(serverName.getText());
-            serverUrl.setSummary(serverUrl.getText());
-            username.setSummary(username.getText());
-            screen.setSummary(serverUrl.getText());
-            screen.setTitle(serverName.getText());
+        
+        private void setName(String name) {
+        	mName.setText(name);
+        }
+        
+        private void setUrl(String url) {
+        	mUrl.setText(url);
+        }
+        
+        private void setUsername(String username) {
+        	mUsername.setText(username);
+        }
+        
+        private void setPassword(String password) {
+        	mPassword.setText(password);
+        }
+        
+        private void setTitle(String title) {
+        	mScreen.setTitle(title);
+        }
+        
+        private void setSummary(String summary) {
+        	mScreen.setSummary(summary);
+        }
+        
+        private void update() {
+            mName.setSummary(mName.getText());
+            mUrl.setSummary(mUrl.getText());
+            mUsername.setSummary(mUsername.getText());
+            mScreen.setSummary(mUrl.getText());
+            mScreen.setTitle(mName.getText());
+        }
+        
+        private void reset() {
+    		mName.setText(getString(R.string.settings_server_new_name));
+    		mUrl.setText("http://");
+    		mUsername.setText(null);
+    		mPassword.setText(null);
+    		mScreen.setTitle(R.string.settings_server_add);
+    		mScreen.setSummary(null);
         }
     }
 }

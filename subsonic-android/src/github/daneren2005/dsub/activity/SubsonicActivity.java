@@ -2,6 +2,7 @@ package github.daneren2005.dsub.activity;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,29 +14,22 @@ import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
 import github.daneren2005.dsub.service.MusicService;
 import github.daneren2005.dsub.service.MusicServiceFactory;
-import github.daneren2005.dsub.service.OfflineException;
-import github.daneren2005.dsub.service.ServerTooOldException;
 import github.daneren2005.dsub.util.Constants;
-import github.daneren2005.dsub.util.FileUtil;
 import github.daneren2005.dsub.util.ImageLoader;
 import github.daneren2005.dsub.util.ModalBackgroundTask;
-import github.daneren2005.dsub.util.SilentBackgroundTask;
 import github.daneren2005.dsub.util.Util;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -51,16 +45,24 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
     private static final int MENU_ITEM_SERVER_2 = 102;
     private static final int MENU_ITEM_SERVER_3 = 103;
     private static final int MENU_ITEM_OFFLINE = 104;
+    private static final int [] SERVER_MENU_ITEM_IDS = new int [] {
+    	MENU_ITEM_OFFLINE,
+    	MENU_ITEM_SERVER_1,
+    	MENU_ITEM_SERVER_2,
+    	MENU_ITEM_SERVER_3
+    };
 
     private static ImageLoader IMAGE_LOADER;
 
     private boolean destroyed;
     private String theme;
 
-	private static Menu mCurrentMenu;
+	private Menu mCurrentMenu;
 	
-	private static View mServerContextView;
-	private static boolean mIsRefreshVisible;
+	private View mServerContextView;
+	private boolean mIsRefreshVisible;
+    
+    private boolean mOfflineModeEnabled = true;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -70,6 +72,7 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         startService(new Intent(this, DownloadServiceImpl.class));
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        mOfflineModeEnabled = Util.isOffline(this);
     }
 
     @Override
@@ -96,7 +99,9 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
         super.onResume();
 
         // Restart activity if theme has changed.
-        if (theme != null && !theme.equals(Util.getTheme(this))) {
+        if ((theme != null && !theme.equals(Util.getTheme(this))) || 
+        		mOfflineModeEnabled != Util.isOffline(this)) {
+        	mOfflineModeEnabled = Util.isOffline(this);
             restart();
         }
 
@@ -122,68 +127,58 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	switch (item.getItemId()) {
-        
-        case android.R.id.home:
-        	Intent homeIntent = new Intent(this, MainActivity.class);
-        	homeIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        	Util.startActivityWithoutTransition(this, homeIntent);
-        	break;
-        	
-        case R.id.action_search:
-        	Intent searchIntent = new Intent(this, SearchActivity.class);
-        	searchIntent.putExtra(Constants.INTENT_EXTRA_REQUEST_SEARCH, true);
-            Util.startActivityWithoutTransition(this, searchIntent);
-            break;
-            
-        case R.id.menu_help:
-        	startActivity(new Intent(this, HelpActivity.class));
-        	break;
-            
-        case R.id.menu_server:
-        	mServerContextView.showContextMenu();
-        	break;
-        	
-        case R.id.menu_settings:
-        	startActivity(new Intent(this, SettingsActivity.class));
-        	break;
-        	
-        case R.id.menu_exit:
-        	exit();
-        	break;
-        	
-        default:
-        	return false;
+    		
+    		case android.R.id.home:
+    			Intent homeIntent = new Intent(this, MainActivity.class);
+    			homeIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    			Util.startActivityWithoutTransition(this, homeIntent);
+    			break;
 
-    }
+    		case R.id.action_search:
+    			Intent searchIntent = new Intent(this, SearchActivity.class);
+    			searchIntent.putExtra(Constants.INTENT_EXTRA_REQUEST_SEARCH, true);
+    			Util.startActivityWithoutTransition(this, searchIntent);
+    			break;
 
-    return true;
+    		case R.id.menu_help:
+    			startActivity(new Intent(this, HelpActivity.class));
+    			break;
+
+    		case R.id.menu_server:
+    			mServerContextView.showContextMenu();
+    			break;
+
+    		case R.id.menu_settings:
+    			startActivity(new Intent(this, SettingsActivity.class));
+    			break;
+
+    		case R.id.menu_exit:
+    			exit();
+    			break;
+
+    		default:
+    			return false;
+    			
+    	}
+
+    	return true;
     }
     
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
         if (view.equals(mServerContextView)) {
-    		android.view.MenuItem menuItem1 = menu.add(R.id.select_server_context_menu, MENU_ITEM_SERVER_1, MENU_ITEM_SERVER_1, Util.getServerName(this, 1));
-    		android.view.MenuItem menuItem2 = menu.add(R.id.select_server_context_menu, MENU_ITEM_SERVER_2, MENU_ITEM_SERVER_2, Util.getServerName(this, 2));
-    		android.view.MenuItem menuItem3 = menu.add(R.id.select_server_context_menu, MENU_ITEM_SERVER_3, MENU_ITEM_SERVER_3, Util.getServerName(this, 3));
-    		android.view.MenuItem menuItem4 = menu.add(R.id.select_server_context_menu, MENU_ITEM_OFFLINE, MENU_ITEM_OFFLINE, Util.getServerName(this, 0));
-    		menu.setGroupCheckable(R.id.select_server_context_menu, true, true);
+        	List<String> serverNames = Util.getServerNames(this);
+        	
+        	List<android.view.MenuItem> menuItems = new ArrayList<android.view.MenuItem>(serverNames.size());
+        	for (int i = 0; i < serverNames.size(); i++) {
+        		String serverName = serverNames.get(i);
+        		menuItems.add(menu.add(R.id.select_server_context_menu, 
+        				SERVER_MENU_ITEM_IDS[i], SERVER_MENU_ITEM_IDS[i], serverName));
+        	}
+        	menu.setGroupCheckable(R.id.select_server_context_menu, true, true);
     		menu.setHeaderTitle(R.string.main_select_server);
-
-    		switch (Util.getActiveServer(this)) {
-    			case 0:
-    				menuItem4.setChecked(true);
-    				break;
-    			case 1:
-    				menuItem1.setChecked(true);
-    				break;
-    			case 2:
-    				menuItem2.setChecked(true);
-    				break;
-    			case 3:
-    				menuItem3.setChecked(true);
-    				break;
-    		}
+    		menuItems.get(Util.getActiveServer(this)).setChecked(true);
     	}
     }
     
