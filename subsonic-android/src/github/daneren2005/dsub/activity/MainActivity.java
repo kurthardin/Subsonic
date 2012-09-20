@@ -79,12 +79,12 @@ implements Exitable, Restartable {
         	}
         }
         
-        handleExtras(getIntent());
+        handleIntentAction(getIntent());
     }
     
     @Override
     protected void onNewIntent(Intent intent) {
-    	handleExtras(intent);
+    	handleIntentAction(intent);
     	mPagerAdapter.notifyDataSetChanged();
     }
     
@@ -96,14 +96,12 @@ implements Exitable, Restartable {
 		prevPageFragment.onPageSelected();
     }
     
-    private void handleExtras(Intent intent) {
-    	if (intent != null) {
-        	String action = intent.getAction();
-    		if (intent.getBooleanExtra(Constants.INTENT_EXTRA_NAME_EXIT, false)) {
-    			exit();
-    		} else if (Constants.INTENT_ACTION_START_DOWNLOAD_ACTIVITY.equals(action))  {
-    				startActivity(new Intent(this, DownloadActivity.class));
-    		}
+    private void handleIntentAction(Intent intent) {
+    	String action = intent == null ? null : intent.getAction();
+    	if (Constants.INTENT_ACTION_EXIT.equals(action)) {
+    		exit();
+    	} else if (Constants.INTENT_ACTION_START_DOWNLOAD_ACTIVITY.equals(action))  {
+    		startActivity(new Intent(this, DownloadActivity.class));
     	}
     }
 

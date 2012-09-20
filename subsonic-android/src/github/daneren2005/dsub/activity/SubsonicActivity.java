@@ -267,7 +267,7 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
     private void returnHome(boolean shouldExit) {
     	Intent homeIntent = MainActivity.createIntent(this);
     	if (shouldExit) {
-    		homeIntent.putExtra(Constants.INTENT_EXTRA_NAME_EXIT, true);
+    		homeIntent.setAction(Constants.INTENT_ACTION_EXIT);
     	}
     	Util.startActivityWithoutTransition(this, homeIntent);
     }

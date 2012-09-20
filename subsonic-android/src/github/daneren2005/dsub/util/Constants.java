@@ -49,9 +49,9 @@ public final class Constants {
     public static final String INTENT_EXTRA_NAME_REFRESH = "subsonic.refresh";
     public static final String INTENT_EXTRA_REQUEST_SEARCH = "subsonic.requestsearch";
     public static final String INTENT_EXTRA_REAL_INTENT = "subsonic.real_intent";
-    public static final String INTENT_EXTRA_NAME_EXIT = "subsonic.exit" ;
     
     public static final String INTENT_ACTION_START_DOWNLOAD_ACTIVITY = "subsonic.intent.action.start_download_activity";
+    public static final String INTENT_ACTION_EXIT = "subsonic.intent.action.exit" ;
 
     // Notification IDs.
     public static final int NOTIFICATION_ID_PLAYING = 100;
