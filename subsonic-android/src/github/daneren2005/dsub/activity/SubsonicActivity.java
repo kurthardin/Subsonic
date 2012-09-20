@@ -129,9 +129,7 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
     	switch (item.getItemId()) {
     		
     		case android.R.id.home:
-    			Intent homeIntent = new Intent(this, MainActivity.class);
-    			homeIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    			Util.startActivityWithoutTransition(this, homeIntent);
+    			Util.startActivityWithoutTransition(this, MainActivity.createIntent(this));
     			break;
 
     		case R.id.action_search:
@@ -267,11 +265,10 @@ public class SubsonicActivity extends SherlockFragmentActivity implements Exitab
     }
     
     private void returnHome(boolean shouldExit) {
-    	Intent homeIntent = new Intent(this, MainActivity.class);
+    	Intent homeIntent = MainActivity.createIntent(this);
     	if (shouldExit) {
     		homeIntent.putExtra(Constants.INTENT_EXTRA_NAME_EXIT, true);
     	}
-    	homeIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     	Util.startActivityWithoutTransition(this, homeIntent);
     }
     

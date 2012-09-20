@@ -31,6 +31,7 @@ import github.daneren2005.dsub.audiofx.VisualizerController;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.domain.PlayerState;
 import github.daneren2005.dsub.domain.RepeatMode;
+import github.daneren2005.dsub.provider.DSubWidgetProvider;
 import github.daneren2005.dsub.receiver.MediaButtonIntentReceiver;
 import github.daneren2005.dsub.util.CancellableTask;
 import github.daneren2005.dsub.util.Constants;
@@ -444,6 +445,9 @@ public class DownloadServiceImpl extends Service implements DownloadService {
         } else {
             Util.hidePlayingNotification(this, this, handler);
         }
+
+        // Update widget
+        DSubWidgetProvider.getInstance().notifyChange(this, this, this.playerState == PlayerState.STARTED);
         
         MusicDirectory.Entry currentSong = (currentPlaying == null) ? null: currentPlaying.getSong();
         mRemoteControl.updateMetadata(currentSong);
@@ -678,8 +682,11 @@ public class DownloadServiceImpl extends Service implements DownloadService {
         
         if (show) {
             Util.showPlayingNotification(this, this, handler, currentPlaying.getSong());
+            // Update widget
+            DSubWidgetProvider.getInstance().notifyChange(this, this, true);
         } else if (hide) {
             Util.hidePlayingNotification(this, this, handler);
+            DSubWidgetProvider.getInstance().notifyChange(this, this, false);
         }
 
         if (playerState == STARTED) {

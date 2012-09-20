@@ -41,9 +41,12 @@ import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.activity.DownloadActivity;
 import github.daneren2005.dsub.activity.MainActivity;
 import github.daneren2005.dsub.domain.MusicDirectory;
+import github.daneren2005.dsub.domain.PlayerState;
 import github.daneren2005.dsub.service.DownloadService;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
+import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.FileUtil;
+import github.daneren2005.dsub.util.Util;
 
 /**
  * Simple widget to show currently playing album art along
@@ -67,7 +70,10 @@ public class DSubWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        defaultAppWidget(context, appWidgetIds);
+    	DownloadService service = Util.getDownloadService(context);
+    	if (service == null) {
+    		defaultAppWidget(context, appWidgetIds);
+    	}
     }
 
     /**
@@ -211,8 +217,11 @@ public class DSubWidgetProvider extends AppWidgetProvider {
      */
     private void linkButtons(Context context, RemoteViews views, boolean playerActive) {
 
-        Intent intent = new Intent(context, playerActive ? DownloadActivity.class : MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        Intent intent = MainActivity.createIntent(context);
+        if (playerActive) {
+        	intent.setAction(Constants.INTENT_ACTION_START_DOWNLOAD_ACTIVITY);
+        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.appwidget_coverart, pendingIntent);
         views.setOnClickPendingIntent(R.id.appwidget_top, pendingIntent);
         

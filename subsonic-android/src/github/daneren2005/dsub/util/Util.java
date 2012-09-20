@@ -52,6 +52,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import github.daneren2005.dsub.R;
 import github.daneren2005.dsub.activity.DownloadActivity;
+import github.daneren2005.dsub.activity.MainActivity;
 import github.daneren2005.dsub.domain.MusicDirectory;
 import github.daneren2005.dsub.domain.PlayerState;
 import github.daneren2005.dsub.domain.RepeatMode;
@@ -696,7 +697,8 @@ public final class Util {
 
         notification.contentView = contentView;
         
-        Intent notificationIntent = new Intent(context, DownloadActivity.class);
+        Intent notificationIntent = MainActivity.createIntent(context);
+        notificationIntent.setAction(Constants.INTENT_ACTION_START_DOWNLOAD_ACTIVITY);
         notification.contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
         
         // Create actions for media buttons
@@ -727,8 +729,6 @@ public final class Util {
             }
         });
 
-        // Update widget
-        DSubWidgetProvider.getInstance().notifyChange(context, downloadService, true);
     }
 
     public static void hidePlayingNotification(final Context context, final DownloadServiceImpl downloadService, Handler handler) {
@@ -741,8 +741,6 @@ public final class Util {
             }
         });
 
-        // Update widget
-        DSubWidgetProvider.getInstance().notifyChange(context, downloadService, false);
     }
     
     public static DownloadService getDownloadService(Context context) {

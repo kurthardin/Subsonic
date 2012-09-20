@@ -30,6 +30,7 @@ import github.daneren2005.dsub.interfaces.Restartable;
 import github.daneren2005.dsub.service.DownloadServiceImpl;
 import github.daneren2005.dsub.util.Constants;
 import github.daneren2005.dsub.util.Util;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -47,6 +48,12 @@ implements Exitable, Restartable {
     private MainActivityPagerAdapter mPagerAdapter;
     private ViewPager mViewPager;
     private SubsonicTabFragment prevPageFragment;
+    
+    public static Intent createIntent(Context context) {
+    	Intent intent = new Intent(context, MainActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		return intent;
+    }
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,8 +98,11 @@ implements Exitable, Restartable {
     
     private void handleExtras(Intent intent) {
     	if (intent != null) {
+        	String action = intent.getAction();
     		if (intent.getBooleanExtra(Constants.INTENT_EXTRA_NAME_EXIT, false)) {
     			exit();
+    		} else if (Constants.INTENT_ACTION_START_DOWNLOAD_ACTIVITY.equals(action))  {
+    				startActivity(new Intent(this, DownloadActivity.class));
     		}
     	}
     }
