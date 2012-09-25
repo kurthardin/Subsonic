@@ -322,7 +322,13 @@ public class SelectAlbumFragment extends SubsonicTabFragment {
         new LoadTask() {
             @Override
             protected MusicDirectory load(MusicService service) throws Exception {
-                return service.getAlbumList(albumListFetchType, albumListFetchSize, albumListFetchOffset, getActivity(), this);
+            	MusicDirectory result;
+            	if (AlbumListType.STARRED.getName().equals(albumListFetchType)) {
+            		result = service.getStarredList(getActivity(), this);
+            	} else {
+            		result = service.getAlbumList(albumListFetchType, albumListFetchSize, albumListFetchOffset, getActivity(), this);
+            	}
+                return result;
             }
 
             @Override
